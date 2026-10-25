@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramFeedback">Feedback and issues</string>
+    <string name="PlusgramMaterialYou">Material You colors</string>
+    <string name="PlusgramMaterialYouOff">Off / previous theme</string>
+    <string name="PlusgramMaterialYouSystem">Follow system</string>
+    <string name="PlusgramMaterialYouLight">Light</string>
+    <string name="PlusgramMaterialYouDark">Dark</string>
+    <string name="PlusgramMaterialYouAmoled">AMOLED</string>
+    <string name="PlusgramMaterialYouInfo">Colors follow your system palette on Android 12 and newer. Material 3 shapes and controls are available on all supported versions.</string>
+    <string name="PlusgramMaterialYouUnavailable">Dynamic colors require Android 12 or newer.</string>
+    <string name="PlusgramMaterialYouPreset">Apply Material You style</string>
+    <string name="PlusgramMaterialYouPresetInfo">Enable rounded cards, Material 3 controls, chat header and navigation.</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramFeedback">Обратная связь и ошибки</string>
+    <string name="PlusgramMaterialYou">Цвета Material You</string>
+    <string name="PlusgramMaterialYouOff">Выключено / прежняя тема</string>
+    <string name="PlusgramMaterialYouSystem">Как в системе</string>
+    <string name="PlusgramMaterialYouLight">Светлая</string>
+    <string name="PlusgramMaterialYouDark">Тёмная</string>
+    <string name="PlusgramMaterialYouAmoled">AMOLED</string>
+    <string name="PlusgramMaterialYouInfo">Цвета берутся из системной палитры на Android 12 и новее. Формы и элементы Material 3 доступны на всех поддерживаемых версиях.</string>
+    <string name="PlusgramMaterialYouUnavailable">Для динамических цветов нужен Android 12 или новее.</string>
+    <string name="PlusgramMaterialYouPreset">Применить стиль Material You</string>
+    <string name="PlusgramMaterialYouPresetInfo">Включить скруглённые карточки, элементы Material 3, шапку чата и панель навигации.</string>
+</resources>
