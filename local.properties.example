@@ -1,0 +1,10 @@
+# Copy to local.properties. Never commit your credentials.
+sdk.dir=C:/Users/YOUR_USER/AppData/Local/Android/Sdk
+TELEGRAM_APP_ID=YOUR_NUMERIC_APP_ID
+TELEGRAM_APP_HASH=YOUR_32_CHARACTER_APP_HASH
+# Python 3.11 is required by this fork's Chaquopy runtime.
+# CHAQUOPY_BUILD_PYTHON=C:/Python311/python.exe
+# MAPS_API_KEY=
+# KEYSTORE_PASS=
+# ALIAS_NAME=
+# ALIAS_PASS=
