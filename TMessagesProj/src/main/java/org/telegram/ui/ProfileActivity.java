@@ -11685,6 +11685,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     private Drawable getBadgeDrawable(BadgeDTO badge, boolean animated, int a) {
+        Drawable customBadge = BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+        if (customBadge != null) {
+            return customBadge;
+        }
         if (badgeDrawable[a] == null) {
             badgeDrawable[a] = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(nameTextView[a], AndroidUtilities.dp(24), a == 0 ? AnimatedEmojiDrawable.CACHE_TYPE_EMOJI_STATUS : AnimatedEmojiDrawable.CACHE_TYPE_KEYBOARD);
             if (fragmentViewAttached) {

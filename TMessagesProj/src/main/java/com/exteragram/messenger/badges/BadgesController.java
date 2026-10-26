@@ -1,16 +1,24 @@
 package com.exteragram.messenger.badges;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.widget.FrameLayout;
 
 import com.exteragram.messenger.api.dto.BadgeDTO;
 import com.exteragram.messenger.badges.source.ApiBadgeSource;
-import com.exteragram.messenger.utils.text.LocaleUtils;
+import com.plusgram.app.badges.PlusgramBadgeDrawable;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
-import org.telegram.messenger.UserObject;
+import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -18,195 +26,334 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.BulletinFactory;
 
-import java.util.function.Consumer;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Локальный аналог {@code com.exteragram.messenger.badges.BadgesController}.
- *
- * У exteraGram значки приходят с их сервера; сюда это не переносится, поэтому
- * хранилище локальное — SharedPreferences. Плагины каталога подменяют
- * {@link #getBadge}, {@link #isExtera} и {@link #isDeveloper} через Xposed и
- * рисуют значки сами, им нужен именно этот набор имён.
+ * Контроллер бейджей (значков профиля) Plusgram.
+ * Поддерживает:
+ * - Загрузку и кэширование списка спонсоров из GitHub (badges.json)
+ * - Адаптацию цвета значка под тему оформления (Material You)
+ * - Полное отключение/включение отображения значков в настройках
+ * - Выбор активного значка для пользователей с несколькими бейджами (например, Создатель / Спонсор)
  */
 public final class BadgesController {
 
     public static final BadgesController INSTANCE = new BadgesController();
 
-    private static final ApiBadgeSource apiBadgeSource = new ApiBadgeSource();
+    public static final String BADGE_CREATOR = "creator";
+    public static final String BADGE_SUPPORTER = "supporter";
+    public static final String BADGE_NONE = "none";
 
-    private static final String PREFS_NAME = "exteraless_badges";
-    private static final String KEY_DOCUMENT = "badge_document_";
-    private static final String KEY_TEXT = "badge_text_";
+    public static final long CREATOR_TELEGRAM_ID = 1084312196L;
+
+    private static final String BADGES_URL = "https://raw.githubusercontent.com/IEONDDD/PlusGram/main/badges.json";
+    private static final String PREFS_NAME = "plusgram_badges_prefs";
+    private static final String KEY_BADGES_ENABLED = "badges_enabled";
+    private static final String KEY_MY_SELECTED_BADGE = "my_selected_badge";
+    private static final String KEY_CACHED_JSON = "cached_badges_json";
+
+    private final ApiBadgeSource apiBadgeSource = new ApiBadgeSource();
+    private final Map<Long, UserBadgeInfo> remoteUsers = new ConcurrentHashMap<>();
+
+    private Bitmap creatorBitmap;
+    private Bitmap supporterBitmap;
+    private boolean initialized = false;
+
+    public static class UserBadgeInfo {
+        public final long userId;
+        public final List<String> badges = new ArrayList<>();
+        public String selected;
+
+        public UserBadgeInfo(long userId, String selected) {
+            this.userId = userId;
+            this.selected = selected;
+        }
+    }
 
     private BadgesController() {
+        init();
+    }
+
+    public synchronized void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+
+        // Default built-in fallback for creator
+        UserBadgeInfo creatorInfo = new UserBadgeInfo(CREATOR_TELEGRAM_ID, BADGE_CREATOR);
+        creatorInfo.badges.add(BADGE_CREATOR);
+        creatorInfo.badges.add(BADGE_SUPPORTER);
+        remoteUsers.put(CREATOR_TELEGRAM_ID, creatorInfo);
+
+        // Load cached JSON
+        loadCachedJson();
+
+        // Fetch latest badges from GitHub in background
+        Utilities.globalQueue.postRunnable(this::fetchRemoteBadges);
     }
 
     private static SharedPreferences prefs() {
-        return ApplicationLoader.applicationContext.getSharedPreferences(PREFS_NAME, 0);
+        return ApplicationLoader.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    public boolean isBadgesEnabled() {
+        return prefs().getBoolean(KEY_BADGES_ENABLED, true);
+    }
+
+    public void setBadgesEnabled(boolean enabled) {
+        prefs().edit().putBoolean(KEY_BADGES_ENABLED, enabled).apply();
+    }
+
+    public String getMySelectedBadge() {
+        String saved = prefs().getString(KEY_MY_SELECTED_BADGE, null);
+        if (saved != null) {
+            return saved;
+        }
+        long self = selfId();
+        UserBadgeInfo info = remoteUsers.get(self);
+        if (info != null && !TextUtils.isEmpty(info.selected)) {
+            return info.selected;
+        }
+        return BADGE_NONE;
+    }
+
+    public void setMySelectedBadge(String badgeId) {
+        prefs().edit().putString(KEY_MY_SELECTED_BADGE, badgeId).apply();
+    }
+
+    public List<String> getMyAvailableBadges() {
+        List<String> list = new ArrayList<>();
+        long self = selfId();
+        UserBadgeInfo info = remoteUsers.get(self);
+        if (info != null && !info.badges.isEmpty()) {
+            list.addAll(info.badges);
+        } else if (self == CREATOR_TELEGRAM_ID) {
+            list.add(BADGE_CREATOR);
+            list.add(BADGE_SUPPORTER);
+        }
+        return list;
     }
 
     private static long selfId() {
-        TLRPC.User self = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-        return self == null ? 0 : self.id;
-    }
-
-    public BadgeDTO getBadge() {
-        return getBadgeFor(selfId());
+        try {
+            TLRPC.User self = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            return self == null ? 0 : self.id;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public BadgeDTO getBadge(TLObject object) {
-        if (object instanceof TLRPC.User) {
-            return getBadgeFor(((TLRPC.User) object).id);
+        if (!isBadgesEnabled()) {
+            return null;
         }
-        if (object instanceof TLRPC.Chat) {
-            return getBadgeFor(((TLRPC.Chat) object).id);
+        if (object instanceof TLRPC.User) {
+            return getBadgeForUser(((TLRPC.User) object).id);
         }
         return null;
+    }
+
+    public BadgeDTO getBadgeForUser(long userId) {
+        if (!isBadgesEnabled() || userId == 0) {
+            return null;
+        }
+
+        long self = selfId();
+        if (userId == self) {
+            String selected = getMySelectedBadge();
+            if (BADGE_NONE.equals(selected) || TextUtils.isEmpty(selected)) {
+                return null;
+            }
+            return createBadgeDTO(selected);
+        }
+
+        UserBadgeInfo info = remoteUsers.get(userId);
+        if (info != null && !BADGE_NONE.equals(info.selected) && !TextUtils.isEmpty(info.selected)) {
+            return createBadgeDTO(info.selected);
+        }
+
+        return null;
+    }
+
+    public BadgeDTO createBadgeDTO(String badgeId) {
+        if (BADGE_CREATOR.equals(badgeId)) {
+            return new BadgeDTO(
+                    BADGE_CREATOR,
+                    "Создатель Plusgram",
+                    "Создатель Plusgram — официальный разработчик проекта."
+            );
+        } else if (BADGE_SUPPORTER.equals(badgeId)) {
+            return new BadgeDTO(
+                    BADGE_SUPPORTER,
+                    "Спонсор Plusgram",
+                    "Этот значок получен за поддержку проекта Plusgram (10 ⭐️). Спасибо за ваш вклад в развитие!"
+            );
+        }
+        return null;
+    }
+
+    public synchronized Bitmap getCreatorBitmap() {
+        if (creatorBitmap == null || creatorBitmap.isRecycled()) {
+            try {
+                creatorBitmap = BitmapFactory.decodeResource(
+                        ApplicationLoader.applicationContext.getResources(),
+                        R.drawable.badge_creator_emblem
+                );
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+        return creatorBitmap;
+    }
+
+    public synchronized Bitmap getSupporterBitmap() {
+        if (supporterBitmap == null || supporterBitmap.isRecycled()) {
+            try {
+                supporterBitmap = BitmapFactory.decodeResource(
+                        ApplicationLoader.applicationContext.getResources(),
+                        R.drawable.badge_supporter_emblem
+                );
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+        return supporterBitmap;
+    }
+
+    public Drawable getBadgeDrawable(BadgeDTO badge, Theme.ResourcesProvider resourcesProvider) {
+        if (badge == null || !isBadgesEnabled()) {
+            return null;
+        }
+        if (BADGE_CREATOR.equals(badge.getBadgeId())) {
+            Bitmap b = getCreatorBitmap();
+            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider) : null;
+        } else if (BADGE_SUPPORTER.equals(badge.getBadgeId())) {
+            Bitmap b = getSupporterBitmap();
+            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider) : null;
+        }
+        return null;
+    }
+
+    public Drawable getBadgeDrawable(String badgeId, Theme.ResourcesProvider resourcesProvider, int sizeDp) {
+        if (BADGE_CREATOR.equals(badgeId)) {
+            Bitmap b = getCreatorBitmap();
+            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider, sizeDp) : null;
+        } else if (BADGE_SUPPORTER.equals(badgeId)) {
+            Bitmap b = getSupporterBitmap();
+            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider, sizeDp) : null;
+        }
+        return null;
+    }
+
+    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, org.telegram.tgnet.TLObject object,
+                                  Theme.ResourcesProvider resourcesProvider, int account) {
+        showBadgeBulletin(fragment, badge, object, resourcesProvider, account, null, Boolean.FALSE);
+    }
+
+    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, org.telegram.tgnet.TLObject object,
+                                  Theme.ResourcesProvider resourcesProvider, int account,
+                                  FrameLayout containerLayout, Boolean showButton) {
+        if (object == null || badge == null || fragment == null) {
+            return;
+        }
+
+        Drawable d = getBadgeDrawable(badge, resourcesProvider);
+        if (d != null) {
+            BulletinFactory factory = containerLayout != null
+                    ? BulletinFactory.of(containerLayout, resourcesProvider)
+                    : BulletinFactory.of(fragment);
+            if (factory != null) {
+                factory.createSimpleBulletin(d, badge.getTitle(), badge.getText())
+                        .show();
+                return;
+            }
+        }
+
+        // Fallback for custom document ID
+        if (badge.getDocumentId() != 0) {
+            BulletinFactory factory = containerLayout != null
+                    ? BulletinFactory.of(containerLayout, resourcesProvider)
+                    : BulletinFactory.of(fragment);
+            if (factory != null) {
+                factory.createEmojiBulletin(AnimatedEmojiDrawable.findDocument(account, badge.getDocumentId()), badge.getText())
+                        .wrapContent()
+                        .show();
+            }
+        }
+    }
+
+    private void loadCachedJson() {
+        String cached = prefs().getString(KEY_CACHED_JSON, null);
+        if (!TextUtils.isEmpty(cached)) {
+            parseBadgesJson(cached);
+        }
+    }
+
+    private void fetchRemoteBadges() {
+        try {
+            URL url = new URL(BADGES_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(6000);
+            conn.setUseCaches(false);
+
+            if (conn.getResponseCode() == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+                reader.close();
+                String json = sb.toString();
+                if (!TextUtils.isEmpty(json)) {
+                    prefs().edit().putString(KEY_CACHED_JSON, json).apply();
+                    parseBadgesJson(json);
+                }
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    private void parseBadgesJson(String jsonString) {
+        try {
+            JSONObject root = new JSONObject(jsonString);
+            JSONObject users = root.optJSONObject("users");
+            if (users != null) {
+                java.util.Iterator<String> keys = users.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    long uid = Long.parseLong(key);
+                    JSONObject userObj = users.getJSONObject(key);
+                    String selected = userObj.optString("selected", BADGE_NONE);
+                    UserBadgeInfo info = new UserBadgeInfo(uid, selected);
+                    JSONArray arr = userObj.optJSONArray("badges");
+                    if (arr != null) {
+                        for (int i = 0; i < arr.length(); i++) {
+                            info.badges.add(arr.getString(i));
+                        }
+                    }
+                    remoteUsers.put(uid, info);
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     public ApiBadgeSource getApiBadgeSource() {
         return apiBadgeSource;
-    }
-
-    private BadgeDTO getBadgeFor(long id) {
-        if (id == 0) {
-            return null;
-        }
-        BadgeDTO fromSource = apiBadgeSource.getBadge(id, id > 0);
-        if (fromSource != null) {
-            return fromSource;
-        }
-        SharedPreferences preferences = prefs();
-        long documentId = preferences.getLong(KEY_DOCUMENT + id, 0);
-        if (documentId == 0) {
-            return null;
-        }
-        return new BadgeDTO(documentId, preferences.getString(KEY_TEXT + id, null));
-    }
-
-    public BadgeDTO getDefaultBadge() {
-        return null;
-    }
-
-    public BadgeDTO getDefaultBadge(TLRPC.User user) {
-        return null;
-    }
-
-    public BadgeDTO getSecondaryBadge(TLRPC.User user) {
-        return null;
-    }
-
-    public boolean hasBadge() {
-        return getBadge() != null;
-    }
-
-    public boolean hasBadge(TLObject object) {
-        return getBadge(object) != null;
-    }
-
-    public boolean canChangeBadge() {
-        return canChangeBadge(UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser());
-    }
-
-    public boolean canChangeBadge(TLRPC.User user) {
-        return user != null && (user.id == selfId() || apiBadgeSource.canChangeBadge(user.id));
-    }
-
-    public boolean isDeveloper() {
-        return apiBadgeSource.isDeveloper(selfId());
-    }
-
-    public boolean isDeveloper(TLRPC.User user) {
-        return user != null && apiBadgeSource.isDeveloper(user.id);
-    }
-
-    public boolean isExtera(long id) {
-        return false;
-    }
-
-    public boolean isExtera(TLRPC.Chat chat) {
-        return false;
-    }
-
-    public boolean isTrusted(long id) {
-        return false;
-    }
-
-    public boolean shouldUseSecondaryBadgeSlot(TLRPC.User user, BadgeDTO badge) {
-        return false;
-    }
-
-    public void updateBadge(BadgeDTO badge, Consumer<String> callback) {
-        long id = selfId();
-        if (id != 0) {
-            SharedPreferences.Editor editor = prefs().edit();
-            if (badge == null) {
-                editor.remove(KEY_DOCUMENT + id).remove(KEY_TEXT + id);
-            } else {
-                editor.putLong(KEY_DOCUMENT + id, badge.getDocumentId())
-                        .putString(KEY_TEXT + id, badge.getText());
-            }
-            editor.apply();
-        }
-        if (callback != null) {
-            callback.accept("ok");
-        }
-    }
-
-    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, TLRPC.Chat chat,
-                                  Theme.ResourcesProvider resourcesProvider, int account) {
-        showBadgeBulletin(fragment, badge, chat, resourcesProvider, account, null, Boolean.FALSE);
-    }
-
-    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, TLRPC.Chat chat,
-                                  Theme.ResourcesProvider resourcesProvider, int account,
-                                  FrameLayout containerLayout, Boolean showButton) {
-        if (chat == null || badge == null) {
-            return;
-        }
-        showBadgeBulletin(fragment, badge, formatBadgeText(badge, chat.title), resourcesProvider, account, containerLayout);
-    }
-
-    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, TLRPC.User user,
-                                  Theme.ResourcesProvider resourcesProvider, int account) {
-        showBadgeBulletin(fragment, badge, user, resourcesProvider, account, null, Boolean.FALSE);
-    }
-
-    public void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, TLRPC.User user,
-                                  Theme.ResourcesProvider resourcesProvider, int account,
-                                  FrameLayout containerLayout, Boolean showButton) {
-        if (user == null || badge == null) {
-            return;
-        }
-        showBadgeBulletin(fragment, badge, formatBadgeText(badge, UserObject.getUserName(user)), resourcesProvider, account, containerLayout);
-    }
-
-    public void showBadgeBulletin(BaseFragment fragment, TLRPC.User user,
-                                  Theme.ResourcesProvider resourcesProvider, int account,
-                                  FrameLayout containerLayout, Boolean showButton) {
-        showBadgeBulletin(fragment, getBadge(user), user, resourcesProvider, account, containerLayout, showButton);
-    }
-
-    private void showBadgeBulletin(BaseFragment fragment, BadgeDTO badge, CharSequence text,
-                                   Theme.ResourcesProvider resourcesProvider, int account,
-                                   FrameLayout containerLayout) {
-        BulletinFactory factory = containerLayout != null
-                ? BulletinFactory.of(containerLayout, resourcesProvider)
-                : BulletinFactory.of(fragment);
-        if (factory == null) {
-            return;
-        }
-        factory.createEmojiBulletin(AnimatedEmojiDrawable.findDocument(account, badge.getDocumentId()), text)
-                .wrapContent()
-                .show();
-    }
-
-    private CharSequence formatBadgeText(BadgeDTO badge, CharSequence fallbackText) {
-        String text = badge.getText();
-        if (TextUtils.isEmpty(text)) {
-            return fallbackText;
-        }
-        CharSequence formatted = LocaleUtils.formatWithUsernames(text);
-        return formatted != null ? formatted : fallbackText;
     }
 }
