@@ -461,6 +461,10 @@ public class MonetHelper {
             return constant;
         }
 
+        Integer custom = com.plusgram.app.appearance.CustomMonetPalette.resolveToken(token);
+        if (custom != null) {
+            return custom;
+        }
         Integer id = ids.get(token);
         if (id != null) {
             return ApplicationLoader.applicationContext.getColor(id);
@@ -636,6 +640,11 @@ public class MonetHelper {
         String palette = descriptor.substring(0, separator);
         int tone = Integer.parseInt(descriptor.substring(separator + 1));
 
+        Integer custom = com.plusgram.app.appearance.CustomMonetPalette.resolveTone(palette, tone);
+        if (custom != null) {
+            return custom;
+        }
+
         Integer shade = toneToShade.get(tone);
         if (shade != null) {
             Integer shadeId = ids.get(palette + "_" + shade);
@@ -661,8 +670,9 @@ public class MonetHelper {
     }
 
     private static int getCustomPaletteColor(int seed, int tone) {
-        int accentColor = ApplicationLoader.applicationContext.getColor(
-                android.R.color.system_accent1_500);
+        int accentColor = com.plusgram.app.appearance.MaterialYouConfig.customAccent()
+                ? com.plusgram.app.appearance.MaterialYouConfig.accentColor()
+                : ApplicationLoader.applicationContext.getColor(android.R.color.system_accent1_500);
         Hct source = Hct.fromInt(Blend.harmonize(seed, accentColor));
         Hct target = Hct.fromInt(accentColor);
         Hct matched = Hct.fromInt(
@@ -675,8 +685,9 @@ public class MonetHelper {
     }
 
     public static int harmonizeColor(int baseColor) {
-        int accentColor = ApplicationLoader.applicationContext.getColor(
-                android.R.color.system_accent1_600);
+        int accentColor = com.plusgram.app.appearance.MaterialYouConfig.customAccent()
+                ? com.plusgram.app.appearance.MaterialYouConfig.accentColor()
+                : ApplicationLoader.applicationContext.getColor(android.R.color.system_accent1_600);
         return Blend.harmonize(baseColor, accentColor);
     }
 

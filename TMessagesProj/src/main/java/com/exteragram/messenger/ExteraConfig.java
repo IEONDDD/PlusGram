@@ -106,6 +106,7 @@ public final class ExteraConfig {
 
     private static void ensureLoaded() {
         AppearanceConfig.ensureLoaded();
+        com.plusgram.app.appearance.MaterialYouConfig.ensureLoaded();
         ChatsConfig.ensureLoaded();
         UtilsConfig.ensureLoaded();
     }

@@ -12,4 +12,13 @@
     <string name="PlusgramMaterialYouPreset">Apply Material You style</string>
     <string name="PlusgramMaterialYouPresetInfo">Enable rounded cards, Material 3 controls, chat header and navigation.</string>
     <string name="PlusgramChannel">Official Channel</string>
+    <string name="PlusgramColorsTitle">Colors</string>
+    <string name="PlusgramColorsAccent">Accent color</string>
+    <string name="PlusgramColorsAccentSystem">Follow system</string>
+    <string name="PlusgramColorsBackground">Background</string>
+    <string name="PlusgramColorsBackgroundSystem">Follow system</string>
+    <string name="PlusgramColorsBackgroundGray">Gray</string>
+    <string name="PlusgramColorsBackgroundBlack">Black</string>
+    <string name="PlusgramColorsCustom">Custom color…</string>
+    <string name="PlusgramColorsInfo">A custom accent and background apply to Material You themes. “Gray” neutralizes the background, “Black” darkens the dark theme to near-black.</string>
 </resources>

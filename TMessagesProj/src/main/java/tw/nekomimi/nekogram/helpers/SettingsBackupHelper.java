@@ -211,6 +211,7 @@ public final class SettingsBackupHelper {
             configTypes.putAll(com.plusgram.app.pillstack.PillStackConfig.getConfigTypes());
             configTypes.putAll(com.plusgram.app.utils.UtilsConfig.getConfigTypes());
             configTypes.putAll(com.plusgram.app.appearance.AppearanceConfig.getConfigTypes());
+            configTypes.putAll(com.plusgram.app.appearance.MaterialYouConfig.getConfigTypes());
             configTypes.putAll(com.plusgram.app.general.GeneralConfig.getConfigTypes());
         } catch (Throwable ignore) {
         }

@@ -12,4 +12,13 @@
     <string name="PlusgramMaterialYouPreset">Применить стиль Material You</string>
     <string name="PlusgramMaterialYouPresetInfo">Включить скруглённые карточки, элементы Material 3, шапку чата и панель навигации.</string>
     <string name="PlusgramChannel">Канал обновлений</string>
+    <string name="PlusgramColorsTitle">Цвета</string>
+    <string name="PlusgramColorsAccent">Цвет акцента</string>
+    <string name="PlusgramColorsAccentSystem">Как в системе</string>
+    <string name="PlusgramColorsBackground">Фон</string>
+    <string name="PlusgramColorsBackgroundSystem">Как в системе</string>
+    <string name="PlusgramColorsBackgroundGray">Серый</string>
+    <string name="PlusgramColorsBackgroundBlack">Чёрный</string>
+    <string name="PlusgramColorsCustom">Свой цвет…</string>
+    <string name="PlusgramColorsInfo">Свой акцент и фон применяются к темам Material You. «Серый» делает фон нейтрально-серым, «Чёрный» затемняет тёмную тему почти до чистого чёрного.</string>
 </resources>
