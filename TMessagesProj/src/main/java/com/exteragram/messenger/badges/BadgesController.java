@@ -317,7 +317,7 @@ public final class BadgesController {
 
     private void fetchRemoteBadges() {
         try {
-            URL url = new URL(BADGES_URL);
+            URL url = new URL(BADGES_URL + "?t=" + System.currentTimeMillis());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(6000);

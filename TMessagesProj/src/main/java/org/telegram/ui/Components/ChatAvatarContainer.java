@@ -1206,6 +1206,24 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
             rightDrawableIsScamOrVerified = false;
             rightDrawable2ContentDescription = null;
         }
+        if (!rightDrawableIsScamOrVerified && !rightDrawableIsScam) {
+            org.telegram.tgnet.TLRPC.User u = parentFragment != null ? parentFragment.getCurrentUser() : null;
+            org.telegram.tgnet.TLRPC.Chat c = parentFragment != null ? parentFragment.getCurrentChat() : null;
+            if (com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
+                com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(u != null ? u : c);
+                if (badge != null) {
+                    Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+                    if (d != null) {
+                        titleTextView.setRightDrawable2(d);
+                        titleTextView.setRightDrawable2OnClick(v -> {
+                            if (parentFragment != null) {
+                                com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(parentFragment, badge, u != null ? u : c, resourcesProvider, currentAccount);
+                            }
+                        });
+                    }
+                }
+            }
+        }
         if (premium || DialogObject.getEmojiStatusDocumentId(emojiStatus) != 0) {
             if (titleTextView.getRightDrawable() instanceof AnimatedEmojiDrawable.WrapSizeDrawable &&
                 ((AnimatedEmojiDrawable.WrapSizeDrawable) titleTextView.getRightDrawable()).getDrawable() instanceof AnimatedEmojiDrawable) {
