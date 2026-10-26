@@ -6,7 +6,7 @@
 Кастомный Android-клиент Telegram на базе exteraless / NagramX.
 
 [![Telegram Channel](https://img.shields.io/badge/Telegram-Канал%20с%20обновлениями-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/OPlusGram)
-[![GitHub Release](https://img.shields.io/badge/Release-v1.0.0-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
+[![GitHub Release](https://img.shields.io/badge/Release-v2.0.0-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
 </div>
 
 - **Telegram-канал (новости и обновления)**: https://t.me/OPlusGram
