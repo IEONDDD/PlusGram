@@ -43,11 +43,6 @@ public final class AppIcons {
         DESCRIPTIONS.put("NOTHING", R.string.AppIconInfoNothing);
         DESCRIPTIONS.put("PLUS", R.string.AppIconInfoPlus);
         DESCRIPTIONS.put("TELEGRAM", R.string.AppIconInfoTelegram);
-        DESCRIPTIONS.put("VINTAGE", R.string.AppIconInfoVintage);
-        DESCRIPTIONS.put("AQUA", R.string.AppIconInfoAqua);
-        DESCRIPTIONS.put("PREMIUM", R.string.AppIconInfoPremium);
-        DESCRIPTIONS.put("TURBO", R.string.AppIconInfoTurbo);
-        DESCRIPTIONS.put("NOX", R.string.AppIconInfoNox);
     }
 
     private AppIcons() {
