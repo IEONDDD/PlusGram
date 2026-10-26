@@ -215,19 +215,19 @@ object AppearanceConfig {
     val newLoadingStyle =
         addConfig("OEAppearanceNewLoadingStyle", ConfigItem.configTypeBool, true)
 
-    /** M3-шапка чата. Дефолт false, как в exteraGram. */
+    /** M3-шапка чата включена по умолчанию в Plusgram. */
     @JvmField
     val newChatHeaderStyle =
-        addConfig("OEAppearanceNewChatHeaderStyle", ConfigItem.configTypeBool, false)
+        addConfig("OEAppearanceNewChatHeaderStyle", ConfigItem.configTypeBool, true)
 
-    /** M3-нижняя панель вкладок. Дефолт false, как в exteraGram. */
+    /** M3-нижняя панель вкладок включена по умолчанию в Plusgram. */
     @JvmField
     val newNavigationBarStyle =
-        addConfig("OEAppearanceNewNavigationBarStyle", ConfigItem.configTypeBool, false)
+        addConfig("OEAppearanceNewNavigationBarStyle", ConfigItem.configTypeBool, true)
 
     @JvmField
     val m3ListItems =
-        addConfig("OEAppearanceM3ListItems", ConfigItem.configTypeBool, false)
+        addConfig("OEAppearanceM3ListItems", ConfigItem.configTypeBool, true)
 
     @JvmStatic
     fun m3ListItems(): Boolean {

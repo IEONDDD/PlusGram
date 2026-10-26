@@ -1965,7 +1965,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
 
         if (!backAnimation) {
             distToMove = Math.abs(containerView.getMeasuredWidth() - x);
-            int duration = Math.max((int) (200.0f / containerView.getMeasuredWidth() * distToMove), newBackTransitions() ? 380 : 50);
+            int duration = com.plusgram.app.appearance.MotionConfig.duration(Math.max((int) (200.0f / containerView.getMeasuredWidth() * distToMove), newBackTransitions() ? 380 : 50));
             if (!overrideTransition) {
                 animatorSet.playTogether(
                     ObjectAnimator.ofFloat(containerView, View.TRANSLATION_X, (containerView.getMeasuredWidth() + (predictiveBackInProgress ? dp(56) : 0))).setDuration(duration),
@@ -1977,7 +1977,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
             }
         } else {
             distToMove = x;
-            int duration = Math.max((int) (320.0f / containerView.getMeasuredWidth() * distToMove), newBackTransitions() ? 320 : 120);
+            int duration = com.plusgram.app.appearance.MotionConfig.duration(Math.max((int) (320.0f / containerView.getMeasuredWidth() * distToMove), newBackTransitions() ? 320 : 120));
             if (!overrideTransition) {
                 animatorSet.playTogether(
                     ObjectAnimator.ofFloat(containerView, View.TRANSLATION_X, 0).setDuration(duration),
@@ -2322,7 +2322,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                     dt = 18;
                 }
                 lastFrameTime = newTime;
-                float duration = preview && open ? 190.0f : 150.0f;
+                float duration = Math.max(1, com.plusgram.app.appearance.MotionConfig.duration(preview && open ? 190 : 150));
                 animationProgress += dt / duration;
                 if (animationProgress > 1.0f) {
                     animationProgress = 1.0f;
@@ -2667,7 +2667,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 currentAnimation = new AnimatorSet();
                 currentAnimation.playTogether(animators);
                 currentAnimation.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
-                currentAnimation.setDuration(200);
+                currentAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
                 currentAnimation.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -3019,7 +3019,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
         animatorSet.playTogether(
                 ObjectAnimator.ofFloat(fragment.fragmentView, View.SCALE_X, 1.0f, 1.05f, 1.0f),
                 ObjectAnimator.ofFloat(fragment.fragmentView, View.SCALE_Y, 1.0f, 1.05f, 1.0f));
-        animatorSet.setDuration(200);
+        animatorSet.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
         animatorSet.setInterpolator(new CubicBezierInterpolator(0.42, 0.0, 0.58, 1.0));
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -3223,7 +3223,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 currentAnimation = new AnimatorSet();
                 currentAnimation.playTogether(animators);
                 currentAnimation.setInterpolator(accelerateDecelerateInterpolator);
-                currentAnimation.setDuration(200);
+                currentAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
                 currentAnimation.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -3585,7 +3585,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                     }
                 });
                 themeAnimatorSet.playTogether(ObjectAnimator.ofFloat(this, "themeAnimationValue", 0.0f, 1.0f));
-                themeAnimatorSet.setDuration(settings.duration);
+                themeAnimatorSet.setDuration(com.plusgram.app.appearance.MotionConfig.duration(settings.duration));
                 themeAnimatorSet.start();
             }
             if (onDone != null) {

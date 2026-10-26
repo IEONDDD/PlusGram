@@ -1303,7 +1303,7 @@ object NaConfig {
         addConfig(
             "SwitchStyle",
             ConfigItem.configTypeInt,
-            2 // 0: default; 1: Modern; 2: MD3 — openExtera: MD3 по умолчанию, как в exteraGram
+            3 // 0: default; 1: Modern; 2: legacy MD3; 3: Material 3 (Plusgram default)
         )
     val sliderStyle =
         addConfig(

@@ -11,4 +11,5 @@
     <string name="PlusgramMaterialYouUnavailable">Dynamic colors require Android 12 or newer.</string>
     <string name="PlusgramMaterialYouPreset">Apply Material You style</string>
     <string name="PlusgramMaterialYouPresetInfo">Enable rounded cards, Material 3 controls, chat header and navigation.</string>
+    <string name="PlusgramChannel">Official Channel</string>
 </resources>

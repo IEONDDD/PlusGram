@@ -80,6 +80,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
     private int appearanceHeaderRow;
     private int materialYouRow;
     private int materialYouPresetRow;
+    private int materialMotionRow;
     private int materialYouInfoRow;
     private int fabShapeRow;
     private int useSystemFontsRow;
@@ -209,6 +210,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
         appearanceHeaderRow = addRow("appearanceHeader");
         materialYouRow = addRow("materialYou", "PlusgramMaterialYou");
         materialYouPresetRow = addRow("materialYouPreset", "PlusgramMaterialYouPreset");
+        materialMotionRow = addRow("materialMotion", "PlusgramMotionTitle");
         materialYouInfoRow = addRow();
         fabShapeRow = addRow("fabShape");
         useSystemFontsRow = addRow("useSystemFonts");
@@ -567,6 +569,9 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                 invalidatePreviews();
             });
             showDialog(builder.create());
+            return;
+        } else if (position == materialMotionRow) {
+            presentFragment(new com.plusgram.app.appearance.MaterialMotionActivity());
             return;
         } else if (position == materialYouPresetRow) {
             AppearanceConfig.sectionRadius.setConfigInt(24);
@@ -1059,7 +1064,10 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                 case TYPE_DETAIL_SETTINGS: {
                     // Иконка слева, подпись под заголовком.
                     TextDetailSettingsCell cell = (TextDetailSettingsCell) holder.itemView;
-                    if (position == materialYouPresetRow) {
+                    if (position == materialMotionRow) {
+                        cell.setTextAndValueAndIcon(getString(R.string.PlusgramMotionTitle),
+                                getString(R.string.PlusgramMotionSubtitle), R.drawable.msg_theme, true);
+                    } else if (position == materialYouPresetRow) {
                         cell.setTextAndValueAndIcon(getString(R.string.PlusgramMaterialYouPreset),
                                 getString(R.string.PlusgramMaterialYouPresetInfo), R.drawable.msg_theme, false);
                     } else if (position == appNavigationRow) {
@@ -1127,6 +1135,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
         public int getItemViewType(int position) {
             if (position == materialYouRow) return TYPE_SETTINGS;
             if (position == materialYouPresetRow) return TYPE_DETAIL_SETTINGS;
+            if (position == materialMotionRow) return TYPE_DETAIL_SETTINGS;
             if (position == materialYouInfoRow) return TYPE_INFO_PRIVACY;
             if (position == avatarCornersPreviewRow) {
                 return TYPE_AVATAR_CORNERS;

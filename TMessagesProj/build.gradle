@@ -165,6 +165,7 @@ android {
                 install 'packaging'
                 install 'pillow'
                 install 'requests'
+                install 'httpx[http2]==0.28.1'
                 install 'PyYAML'
             }
         }
