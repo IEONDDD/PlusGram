@@ -1147,11 +1147,13 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         if (!rightDrawableIsScamOrVerified && !rightDrawableIsScam) {
             if (mutedIcon != null) {
                 rightDrawable2ContentDescription = getString(R.string.NotificationsMuted);
+                titleTextView.setRightDrawable2(mutedIcon);
             } else {
                 rightDrawable2ContentDescription = null;
+                titleTextView.setRightDrawable2(null);
             }
-            titleTextView.setRightDrawable2(mutedIcon);
         }
+        updateCustomBadge();
         checkActionBar(true);
     }
 
@@ -1206,24 +1208,6 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
             rightDrawableIsScamOrVerified = false;
             rightDrawable2ContentDescription = null;
         }
-        if (!rightDrawableIsScamOrVerified && !rightDrawableIsScam) {
-            org.telegram.tgnet.TLRPC.User u = parentFragment != null ? parentFragment.getCurrentUser() : null;
-            org.telegram.tgnet.TLRPC.Chat c = parentFragment != null ? parentFragment.getCurrentChat() : null;
-            if (com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
-                com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(u != null ? u : c);
-                if (badge != null) {
-                    Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
-                    if (d != null) {
-                        titleTextView.setRightDrawable2(d);
-                        titleTextView.setRightDrawable2OnClick(v -> {
-                            if (parentFragment != null) {
-                                com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(parentFragment, badge, u != null ? u : c, resourcesProvider, currentAccount);
-                            }
-                        });
-                    }
-                }
-            }
-        }
         if (premium || DialogObject.getEmojiStatusDocumentId(emojiStatus) != 0) {
             if (titleTextView.getRightDrawable() instanceof AnimatedEmojiDrawable.WrapSizeDrawable &&
                 ((AnimatedEmojiDrawable.WrapSizeDrawable) titleTextView.getRightDrawable()).getDrawable() instanceof AnimatedEmojiDrawable) {
@@ -1249,7 +1233,37 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
             titleTextView.setRightDrawable(null);
             rightDrawableContentDescription = null;
         }
+        updateCustomBadge();
         checkActionBar(animated);
+    }
+
+    private void updateCustomBadge() {
+        if (!com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
+            return;
+        }
+        org.telegram.tgnet.TLRPC.User u = parentFragment != null ? parentFragment.getCurrentUser() : null;
+        org.telegram.tgnet.TLRPC.Chat c = parentFragment != null ? parentFragment.getCurrentChat() : null;
+        com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(u != null ? u : c);
+        if (badge != null) {
+            Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+            if (d != null) {
+                if (titleTextView.getRightDrawable() == null) {
+                    titleTextView.setRightDrawable(d);
+                    titleTextView.setRightDrawableOnClick(v -> {
+                        if (parentFragment != null) {
+                            com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(parentFragment, badge, u != null ? u : c, resourcesProvider, currentAccount);
+                        }
+                    });
+                } else if (titleTextView.getRightDrawable2() == null && !rightDrawableIsScamOrVerified && !rightDrawableIsScam) {
+                    titleTextView.setRightDrawable2(d);
+                    titleTextView.setRightDrawable2OnClick(v -> {
+                        if (parentFragment != null) {
+                            com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(parentFragment, badge, u != null ? u : c, resourcesProvider, currentAccount);
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private Drawable emojiStatusDefaultDrawable;
