@@ -6,9 +6,11 @@ import android.os.Build;
 import android.view.View;
 import android.view.HapticFeedbackConstants;
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.ui.Cells.TextSettingsCell;
+import org.telegram.ui.Cells.NotificationsCheckCell;
+import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextDetailSettingsCell;
+import org.telegram.ui.Cells.TextSettingsCell;
 
 /** Motion preferences shared by fragment navigation and settings controls. */
 public final class MotionConfig {
@@ -28,8 +30,9 @@ public final class MotionConfig {
     public static int rowHeight() { return prefs().getBoolean("comfortable", true) ? 72 : 56; }
     public static void press(View view, boolean pressed) {
         if (!prefs().getBoolean("press", true) || !enabled()) return;
-        // Only simple settings cells: chat/media transforms are owned by their own gestures.
-        if (view instanceof TextSettingsCell || view instanceof TextCheckCell || view instanceof TextDetailSettingsCell) {
+        // Simple list cells only: chat/media transforms are owned by their own gestures.
+        if (view instanceof TextSettingsCell || view instanceof TextCheckCell || view instanceof TextDetailSettingsCell
+                || view instanceof TextCell || view instanceof NotificationsCheckCell) {
             view.animate().scaleX(pressed ? .98f : 1f).scaleY(pressed ? .98f : 1f)
                     .setDuration(duration(pressed ? 100 : 180)).start();
         }
