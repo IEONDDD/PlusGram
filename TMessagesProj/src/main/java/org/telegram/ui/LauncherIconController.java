@@ -41,15 +41,15 @@ public class LauncherIconController {
         PLUSGRAM("PlusgramIcon", R.drawable.plusgram_icon_background,
                 R.drawable.plusgram_icon_foreground, R.string.AppIconExteraless),
         BLUEPRINT("BlueprintIcon", R.drawable.blueprint_icon_background,
-                R.drawable.blueprint_icon_foreground, R.string.AppIconBlueprint),
+                R.drawable.app_icon_empty_foreground, R.string.AppIconBlueprint),
         RED("RedIcon", R.drawable.red_icon_background,
-                R.drawable.red_icon_foreground, R.string.AppIconRed),
+                R.drawable.app_icon_empty_foreground, R.string.AppIconRed),
         NYA("NyaIcon", R.drawable.nya_icon_background,
-                R.drawable.nya_icon_foreground, R.string.AppIconNya),
+                R.drawable.app_icon_empty_foreground, R.string.AppIconNya),
         AYU("AyuIcon", R.drawable.ayu_icon_background,
-                R.drawable.ayu_icon_foreground, R.string.AppIconAyu),
+                R.drawable.app_icon_empty_foreground, R.string.AppIconAyu),
         QUACK("QuackIcon", R.drawable.quack_icon_background,
-                R.drawable.quack_icon_foreground, R.string.AppIconQuack),
+                R.drawable.app_icon_empty_foreground, R.string.AppIconQuack),
         GO("GoIcon", R.drawable.go_icon_background,
                 R.drawable.app_icon_empty_foreground, R.string.AppIconGo),
         HAND("HandIcon", R.drawable.hand_icon_background,
@@ -60,7 +60,8 @@ public class LauncherIconController {
                 R.drawable.app_icon_empty_foreground, R.string.AppIconNothing),
         PLUS("PlusIcon", R.drawable.plus_icon_background,
                 R.drawable.app_icon_empty_foreground, R.string.AppIconPlus),
-        TELEGRAM("TelegramIcon", R.drawable.original_icon_background, R.drawable.app_icon_empty_foreground, R.string.AppIconTelegramOriginal);
+        TELEGRAM("TelegramIcon", R.drawable.original_icon_background,
+                R.drawable.app_icon_empty_foreground, R.string.AppIconTelegramOriginal);
 
         public final String key;
         public final int background;
