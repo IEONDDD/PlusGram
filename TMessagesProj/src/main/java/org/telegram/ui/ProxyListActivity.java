@@ -92,6 +92,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
     private boolean useProxySettings;
 
     private int rowCount;
+    private int tgwsRow;
     @Keep
     private int useProxyRow;
     private int disableConditionsRow;
@@ -446,6 +447,10 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT));
         listView.setAdapter(listAdapter);
         listView.setOnItemClickListener((view, position) -> {
+            if (position == tgwsRow) {
+                presentFragment(new com.plusgram.app.proxy.tgws.TgwsSettingsActivity());
+                return;
+            }
             if (position == useProxyRow) {
                 if (SharedConfig.currentProxy == null) {
                     if (!proxyList.isEmpty()) {
@@ -648,6 +653,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
 
     private void updateRows(boolean notify) {
         rowCount = 0;
+        tgwsRow = rowCount++;
         useProxyRow = rowCount++;
         // Условия отключения показываем всегда: в exteraGram они на виду, а у нас
         // раньше лежали в настройках NagramX, спрятанных по умолчанию.
@@ -881,7 +887,8 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                 VIEW_TYPE_INFO = 4,
                 VIEW_TYPE_PROXY_DETAIL = 5,
                 VIEW_TYPE_SLIDE_CHOOSER = 6,
-                VIEW_TYPE_DISABLE_CONDITIONS = 7;
+                VIEW_TYPE_DISABLE_CONDITIONS = 7,
+                VIEW_TYPE_TGWS = 8;
 
         public static final int PAYLOAD_CHECKED_CHANGED = 0;
         public static final int PAYLOAD_SELECTION_CHANGED = 1;
@@ -938,6 +945,20 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
+                case VIEW_TYPE_TGWS: {
+                    org.telegram.ui.Cells.TextDetailSettingsCell cell = (org.telegram.ui.Cells.TextDetailSettingsCell) holder.itemView;
+                    cell.setTextAndValueAndIcon(getString(R.string.PlusgramTgwsTitle),
+                            com.plusgram.app.proxy.tgws.TgwsService.statusText(), R.drawable.msg_settings, true);
+                    String st = com.plusgram.app.proxy.tgws.TgwsService.state;
+                    if ("running".equals(st)) {
+                        cell.getValueTextView().setTextColor(0xFF4CAF50);
+                    } else if ("error".equals(st)) {
+                        cell.getValueTextView().setTextColor(0xFFE53935);
+                    } else {
+                        cell.getValueTextView().setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+                    }
+                    break;
+                }
                 case VIEW_TYPE_SHADOW: {
                     break;
                 }
@@ -1046,13 +1067,17 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == useProxyRow || position == rotationRow || position == proxyAddRow || position == deleteAllRow || position >= proxyStartRow && position < proxyEndRow;
+            return position == tgwsRow || position == useProxyRow || position == rotationRow || position == proxyAddRow || position == deleteAllRow || position >= proxyStartRow && position < proxyEndRow;
         }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view;
             switch (viewType) {
+                case VIEW_TYPE_TGWS:
+                    view = new org.telegram.ui.Cells.TextDetailSettingsCell(mContext);
+                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    break;
                 case VIEW_TYPE_SHADOW:
                     view = new ShadowSectionCell(mContext);
                     break;
@@ -1101,6 +1126,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
 
         @Override
         public long getItemId(int position) {
+            if (position == tgwsRow) return -14430;
             // Random stable ids, could be anything non-repeating
             if (position == useProxyShadowRow) {
                 return -1;
@@ -1129,6 +1155,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
 
         @Override
         public int getItemViewType(int position) {
+            if (position == tgwsRow) return VIEW_TYPE_TGWS;
             if (position == useProxyShadowRow || position == proxyShadowRow) {
                 return VIEW_TYPE_SHADOW;
             } else if (position == proxyAddRow || position == deleteAllRow) {

@@ -1380,6 +1380,7 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
             return;
         }
         child.setPressed(pressed);
+        com.plusgram.app.appearance.MotionConfig.press(child, pressed);
     }
 
     protected boolean allowSelectChildAtPosition(float x, float y) {

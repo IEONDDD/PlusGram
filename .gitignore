@@ -39,3 +39,5 @@ tests/local/
 **/local.properties
 .pytest_cache/
 chaquopy-build/
+.tgws-test-venv/
+build-plusgram*.log

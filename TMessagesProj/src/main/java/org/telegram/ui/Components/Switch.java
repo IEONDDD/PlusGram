@@ -328,7 +328,7 @@ public class Switch extends View {
             return;
         }
         checkAnimator = ObjectAnimator.ofFloat(this, "progress", newCheckedState ? 1 : 0);
-        checkAnimator.setDuration(200);
+        checkAnimator.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
         checkAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
         checkAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -341,7 +341,7 @@ public class Switch extends View {
 
     private void animateIcon(boolean newCheckedState) {
         iconAnimator = ObjectAnimator.ofFloat(this, "iconProgress", newCheckedState ? 1 : 0);
-        iconAnimator.setDuration(200);
+        iconAnimator.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
         iconAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

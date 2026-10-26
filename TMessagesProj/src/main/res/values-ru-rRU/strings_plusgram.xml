@@ -11,4 +11,5 @@
     <string name="PlusgramMaterialYouUnavailable">Для динамических цветов нужен Android 12 или новее.</string>
     <string name="PlusgramMaterialYouPreset">Применить стиль Material You</string>
     <string name="PlusgramMaterialYouPresetInfo">Включить скруглённые карточки, элементы Material 3, шапку чата и панель навигации.</string>
+    <string name="PlusgramChannel">Канал обновлений</string>
 </resources>

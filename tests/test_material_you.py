@@ -88,6 +88,7 @@ public class Theme {
   day=active=themesDict.get("Blue"); night=themesDict.get("Dark Blue");
  }
  public static ThemeInfo getActiveTheme() { return active; }
+ public static ThemeInfo getTheme(String name) { return themesDict.get(name); }
  public static ThemeInfo getCurrentTheme() { return day; }
  public static ThemeInfo getCurrentNightTheme() { return night; }
  public static boolean isCurrentThemeNight() { return active==night; }

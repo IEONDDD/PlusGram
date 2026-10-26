@@ -8,10 +8,12 @@ object M3ListItems {
     fun enabled(): Boolean = AppearanceConfig.m3ListItems()
 
     @JvmStatic
-    fun rowHeight(stockDp: Int): Int = if (stockDp == 50 && enabled()) 56 else stockDp
+    fun rowHeight(stockDp: Int): Int = if (stockDp == 50 && enabled() &&
+        MotionConfig.prefs().getBoolean("comfortable", true)) 56 else stockDp
 
     @JvmStatic
-    fun detailRowHeight(stockDp: Int): Int = if (stockDp == 64 && enabled()) 72 else stockDp
+    fun detailRowHeight(stockDp: Int): Int = if (stockDp == 64 && enabled() &&
+        MotionConfig.prefs().getBoolean("comfortable", true)) 72 else stockDp
 
     @JvmStatic
     fun shadowHeight(nextIsHeader: Boolean, stockDp: Int): Int {

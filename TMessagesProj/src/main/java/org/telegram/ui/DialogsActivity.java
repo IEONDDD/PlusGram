@@ -14336,15 +14336,23 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             final SharedPreferences preferences = ApplicationLoader.applicationContext
                     .getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
 
-            final String proxyAddress = preferences.getString("proxy_ip", "");
             final boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
-            final boolean proxyVisible = !SharedConfig.proxyList.isEmpty();
+            final boolean connected = currentConnectionState == ConnectionsManager.ConnectionStateConnected || currentConnectionState == ConnectionsManager.ConnectionStateUpdating;
 
-            if (proxyVisible) {
-                io.addGap();
-                io.add(proxyMenuSubItem);
-                proxyDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.SRC_IN));
+            if (proxyEnabled) {
+                proxyMenuSubItem.setSubtext(getString(connected ? R.string.MenuProxyConnected : R.string.MenuProxyConnecting));
+            } else {
+                proxyMenuSubItem.setSubtext(getString(R.string.MenuProxyDisabled));
             }
+
+            io.addGap();
+            io.add(proxyMenuSubItem);
+            proxyDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.SRC_IN));
+        } else {
+            io.addGap();
+            io.add(R.drawable.msg_secret, getString(R.string.ProxySettings), () -> {
+                presentFragment(new ProxyListActivity());
+            });
         }
 
         // exteraless plugins: пункты плагинов (MAIN_MENU) в конце меню «⋮».
