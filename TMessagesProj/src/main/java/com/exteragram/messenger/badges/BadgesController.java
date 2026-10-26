@@ -248,16 +248,20 @@ public final class BadgesController {
     }
 
     public Drawable getBadgeDrawable(BadgeDTO badge, Theme.ResourcesProvider resourcesProvider) {
+        return getBadgeDrawable(badge, resourcesProvider, 20);
+    }
+
+    public Drawable getBadgeDrawable(BadgeDTO badge, Theme.ResourcesProvider resourcesProvider, int sizeDp) {
         if (badge == null || !isBadgesEnabled()) {
             return null;
         }
         Bitmap bg = getScallopBitmap();
         if (BADGE_CREATOR.equals(badge.getBadgeId())) {
             Bitmap b = getCreatorBitmap();
-            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
         } else if (BADGE_SUPPORTER.equals(badge.getBadgeId()) || "sponsor".equals(badge.getBadgeId())) {
             Bitmap b = getSupporterBitmap();
-            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
         }
         return null;
     }
