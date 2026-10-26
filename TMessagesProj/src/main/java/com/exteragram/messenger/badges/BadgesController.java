@@ -65,6 +65,7 @@ public final class BadgesController {
 
     private Bitmap creatorBitmap;
     private Bitmap supporterBitmap;
+    private Bitmap scallopBitmap;
     private boolean initialized = false;
 
     public static class UserBadgeInfo {
@@ -201,6 +202,20 @@ public final class BadgesController {
         return null;
     }
 
+    public synchronized Bitmap getScallopBitmap() {
+        if (scallopBitmap == null || scallopBitmap.isRecycled()) {
+            try {
+                scallopBitmap = BitmapFactory.decodeResource(
+                        ApplicationLoader.applicationContext.getResources(),
+                        R.drawable.badge_scallop_background
+                );
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+        return scallopBitmap;
+    }
+
     public synchronized Bitmap getCreatorBitmap() {
         if (creatorBitmap == null || creatorBitmap.isRecycled()) {
             try {
@@ -233,23 +248,25 @@ public final class BadgesController {
         if (badge == null || !isBadgesEnabled()) {
             return null;
         }
+        Bitmap bg = getScallopBitmap();
         if (BADGE_CREATOR.equals(badge.getBadgeId())) {
             Bitmap b = getCreatorBitmap();
-            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
         } else if (BADGE_SUPPORTER.equals(badge.getBadgeId())) {
             Bitmap b = getSupporterBitmap();
-            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
         }
         return null;
     }
 
     public Drawable getBadgeDrawable(String badgeId, Theme.ResourcesProvider resourcesProvider, int sizeDp) {
+        Bitmap bg = getScallopBitmap();
         if (BADGE_CREATOR.equals(badgeId)) {
             Bitmap b = getCreatorBitmap();
-            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider, sizeDp) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
         } else if (BADGE_SUPPORTER.equals(badgeId)) {
             Bitmap b = getSupporterBitmap();
-            return b != null ? new PlusgramBadgeDrawable(b, resourcesProvider, sizeDp) : null;
+            return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
         }
         return null;
     }
