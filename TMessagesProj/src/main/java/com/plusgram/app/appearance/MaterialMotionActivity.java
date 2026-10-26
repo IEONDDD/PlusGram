@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.telegram.messenger.*;
@@ -147,7 +148,7 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
         system.setTextSize(16);
         system.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         system.setGravity(Gravity.CENTER_VERTICAL);
-        system.setPadding(dp(24), dp(16), dp(24), dp(16));
+        system.setPadding(dp(24), 0, dp(24), 0);
         system.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector), Theme.RIPPLE_MASK_ROUNDRECT_6DP));
         system.setOnClickListener(v -> {
             MaterialYouConfig.accentMode.setConfigInt(MaterialYouConfig.ACCENT_SYSTEM);
@@ -166,16 +167,24 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
             if (i % 6 == 0) {
                 row = new LinearLayout(context);
                 row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setGravity(Gravity.CENTER_VERTICAL);
                 grid.addView(row, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, dp(8)));
             }
             final int color = ACCENT_PRESETS[i];
+            FrameLayout cell = new FrameLayout(context);
             View swatch = new View(context);
             android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
             circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
             circle.setColor(color);
+            if (MaterialYouConfig.accentMode() == MaterialYouConfig.ACCENT_CUSTOM && MaterialYouConfig.accentColor() == color) {
+                circle.setStroke(dp(2), Theme.getColor(Theme.key_dialogTextBlack));
+            }
             swatch.setBackground(circle);
-            row.addView(swatch, LayoutHelper.createLinear(36, 36, dp(6), 0, dp(6), 0));
-            swatch.setOnClickListener(v -> {
+            cell.addView(swatch, LayoutHelper.createFrame(30, 30, Gravity.CENTER));
+            if (row != null) {
+                row.addView(cell, LayoutHelper.createLinear(0, 36, 1.0f));
+            }
+            cell.setOnClickListener(v -> {
                 MaterialYouConfig.accentMode.setConfigInt(MaterialYouConfig.ACCENT_CUSTOM);
                 MaterialYouConfig.accentColor.setConfigInt(color);
                 if (holder[0] != null) holder[0].dismiss();
@@ -188,7 +197,7 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
         custom.setTextSize(16);
         custom.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4));
         custom.setGravity(Gravity.CENTER_VERTICAL);
-        custom.setPadding(dp(24), dp(16), dp(24), dp(16));
+        custom.setPadding(dp(24), 0, dp(24), 0);
         custom.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector), Theme.RIPPLE_MASK_ROUNDRECT_6DP));
         custom.setOnClickListener(v -> {
             if (holder[0] != null) holder[0].dismiss();
