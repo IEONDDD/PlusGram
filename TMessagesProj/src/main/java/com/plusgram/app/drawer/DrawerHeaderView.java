@@ -318,6 +318,29 @@ public class DrawerHeaderView extends FrameLayout {
         premiumStatusDrawable.setColor(statusColor);
         nameView.setRightDrawable(emojiStatusId != 0 || premium ? premiumStatusDrawable : null);
 
+        // Plusgram custom badge (creator/supporter)
+        if (com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
+            com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(user);
+            if (badge != null) {
+                Drawable badgeDrawable = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, null);
+                nameView.setRightDrawable2(badgeDrawable);
+                nameView.setRightDrawable2OnClick(v -> {
+                    com.exteragram.messenger.api.dto.BadgeDTO b = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(user);
+                    if (b != null && getContext() instanceof org.telegram.ui.LaunchActivity) {
+                        org.telegram.ui.LaunchActivity la = (org.telegram.ui.LaunchActivity) getContext();
+                        org.telegram.ui.ActionBar.BaseFragment active = la.getActionBarLayout() != null ? la.getActionBarLayout().getLastFragment() : null;
+                        if (active != null) {
+                            com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(active, b, user, null, account);
+                        }
+                    }
+                });
+            } else {
+                nameView.setRightDrawable2(null);
+            }
+        } else {
+            nameView.setRightDrawable2(null);
+        }
+
         updateProxyStatus();
     }
 

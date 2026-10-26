@@ -11541,4 +11541,14 @@
     <string name="CreateManagedBotUsernameBotLimit">This bot already has a Premium username. Remove it before adding another.</string>
     <string name="CreateManagedBotUsernameSuffixMissing">The username must end in %1$s.</string>
     <string name="CreateManagedBotUsernameCheckFailed">Couldn\'t check this username. Please try again.</string>
+    <string name="PlusgramBadgesTitle">Значки профиля</string>
+    <string name="PlusgramBadgesEnable">Отображать значки профиля</string>
+    <string name="PlusgramBadgesEnableInfo">Показывать значки создателя и спонсоров в профилях.</string>
+    <string name="PlusgramBadgesMyBadge">Мой значок</string>
+    <string name="PlusgramBadgesSupport">⭐️ Поддержать проект (10 Stars)</string>
+    <string name="PlusgramBadgesSupportInfo">Получите эксклюзивный значок спонсора 1+, поддержав разработку Plusgram.</string>
+    <string name="PlusgramBadgesColorInfo">Цвет значков автоматически адаптируется под выбранную тему оформления (Material You).</string>
+    <string name="PlusgramBadgeCreator">Создатель Plusgram</string>
+    <string name="PlusgramBadgeSupporter">Спонсор Plusgram</string>
+    <string name="PlusgramBadgeNone">Не показывать значок</string>
 </resources>
