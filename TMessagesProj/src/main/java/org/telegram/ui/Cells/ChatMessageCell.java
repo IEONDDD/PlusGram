@@ -2382,7 +2382,24 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
             if (event.getAction() == MotionEvent.ACTION_UP && nameStatusPressed) {
-                if (delegate != null) {
+                if (currentNameStatus instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                    TLRPC.User authorUser = currentUser;
+                    TLRPC.Chat authorChat = currentChat;
+                    if (currentMessageObject != null && currentMessageObject.messageOwner != null) {
+                        long fromId = DialogObject.getPeerDialogId(currentMessageObject.messageOwner.from_id);
+                        if (fromId > 0) {
+                            TLRPC.User u = MessagesController.getInstance(currentAccount).getUser(fromId);
+                            if (u != null) authorUser = u;
+                        } else if (fromId < 0) {
+                            TLRPC.Chat c = MessagesController.getInstance(currentAccount).getChat(-fromId);
+                            if (c != null) authorChat = c;
+                        }
+                    }
+                    com.exteragram.messenger.api.dto.BadgeDTO b = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(authorUser != null ? authorUser : authorChat);
+                    if (b != null && delegate instanceof ChatActivity) {
+                        com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin((ChatActivity) delegate, b, authorUser != null ? authorUser : authorChat, resourcesProvider, currentAccount);
+                    }
+                } else if (delegate != null) {
                     if (currentUser != null) {
                         TLRPC.Document document = null;
                         if (currentNameStatusDrawable.getDrawable() instanceof AnimatedEmojiDrawable) {
@@ -20354,6 +20371,27 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     private Object getAuthorStatus() {
+        if (com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
+            TLRPC.User authorUser = currentUser;
+            TLRPC.Chat authorChat = currentChat;
+            if (currentMessageObject != null && currentMessageObject.messageOwner != null) {
+                long fromId = DialogObject.getPeerDialogId(currentMessageObject.messageOwner.from_id);
+                if (fromId > 0) {
+                    TLRPC.User u = MessagesController.getInstance(currentAccount).getUser(fromId);
+                    if (u != null) authorUser = u;
+                } else if (fromId < 0) {
+                    TLRPC.Chat c = MessagesController.getInstance(currentAccount).getChat(-fromId);
+                    if (c != null) authorChat = c;
+                }
+            }
+            com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(authorUser != null ? authorUser : authorChat);
+            if (badge != null) {
+                Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+                if (d != null) {
+                    return d;
+                }
+            }
+        }
         if (!NaConfig.INSTANCE.getPremiumItemEmojiStatus().Bool()) {
             return null;
         }

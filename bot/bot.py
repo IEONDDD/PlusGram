@@ -62,8 +62,43 @@ def save_badges_locally(data: Dict[str, Any]):
 
 
 async def sync_badges_to_github(data: Dict[str, Any]) -> bool:
+    # 1. Try local git push first (uses local repository git credentials)
+    try:
+        repo_dir = str(LOCAL_BADGES_PATH.parent)
+        proc_add = await asyncio.create_subprocess_exec(
+            "git", "add", "badges.json",
+            cwd=repo_dir,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        await proc_add.communicate()
+
+        proc_commit = await asyncio.create_subprocess_exec(
+            "git", "commit", "-m", "Update badges.json via bot",
+            cwd=repo_dir,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        await proc_commit.communicate()
+
+        proc_push = await asyncio.create_subprocess_exec(
+            "git", "push", "origin", "main",
+            cwd=repo_dir,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc_push.communicate()
+        if proc_push.returncode == 0:
+            logger.info("Successfully pushed badges.json to GitHub via git CLI!")
+            return True
+        else:
+            logger.warning(f"Git push returned code {proc_push.returncode}: {stderr.decode()}")
+    except Exception as e:
+        logger.warning(f"Git CLI push failed: {e}")
+
+    # 2. Fallback to GitHub REST API if GITHUB_TOKEN is configured
     if not GITHUB_TOKEN or not GITHUB_REPO:
-        logger.warning("GITHUB_TOKEN or GITHUB_REPO not set. Skipping GitHub commit.")
+        logger.warning("GITHUB_TOKEN or GITHUB_REPO not set. Skipping GitHub API commit.")
         return False
 
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/badges.json"
@@ -275,6 +310,11 @@ async def cmd_add_badge(message: Message):
         await message.answer(f"✅ Пользователю `{target_id}` выдан значок `{badge_name}`!", parse_mode="Markdown")
     except Exception as e:
         await message.answer(f"Ошибка: {e}")
+
+
+@dp.message(F.text)
+async def fallback_text(message: Message):
+    await cmd_start(message)
 
 
 async def main():

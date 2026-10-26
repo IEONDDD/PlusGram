@@ -1598,6 +1598,19 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     if (dialogBotVerificationIcon != 0 && drawBotVerified) {
                         botVerification.set(dialogBotVerificationIcon, false);
                     }
+                    if (com.exteragram.messenger.badges.BadgesController.INSTANCE.isBadgesEnabled()) {
+                        com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(user != null ? user : chat);
+                        if (badge != null) {
+                            android.graphics.drawable.Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+                            if (d != null) {
+                                drawPremium = true;
+                                nameLayoutEllipsizeByGradient = true;
+                                emojiStatus.center = org.telegram.messenger.LocaleController.isRTL;
+                                emojiStatus.set(d, false);
+                                emojiStatus.setParticles(false, false);
+                            }
+                        }
+                    }
                 }
             }
 
