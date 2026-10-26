@@ -14,8 +14,11 @@ import com.plusgram.app.badges.PlusgramBadgeDrawable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
@@ -192,7 +195,7 @@ public final class BadgesController {
                     "Создатель Plusgram",
                     "Создатель Plusgram — официальный разработчик проекта."
             );
-        } else if (BADGE_SUPPORTER.equals(badgeId)) {
+        } else if (BADGE_SUPPORTER.equals(badgeId) || "sponsor".equals(badgeId)) {
             return new BadgeDTO(
                     BADGE_SUPPORTER,
                     "Спонсор Plusgram",
@@ -252,7 +255,7 @@ public final class BadgesController {
         if (BADGE_CREATOR.equals(badge.getBadgeId())) {
             Bitmap b = getCreatorBitmap();
             return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
-        } else if (BADGE_SUPPORTER.equals(badge.getBadgeId())) {
+        } else if (BADGE_SUPPORTER.equals(badge.getBadgeId()) || "sponsor".equals(badge.getBadgeId())) {
             Bitmap b = getSupporterBitmap();
             return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider) : null;
         }
@@ -264,7 +267,7 @@ public final class BadgesController {
         if (BADGE_CREATOR.equals(badgeId)) {
             Bitmap b = getCreatorBitmap();
             return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
-        } else if (BADGE_SUPPORTER.equals(badgeId)) {
+        } else if (BADGE_SUPPORTER.equals(badgeId) || "sponsor".equals(badgeId)) {
             Bitmap b = getSupporterBitmap();
             return b != null ? new PlusgramBadgeDrawable(bg, b, resourcesProvider, sizeDp) : null;
         }
@@ -364,10 +367,21 @@ public final class BadgesController {
                     }
                     remoteUsers.put(uid, info);
                 }
+                AndroidUtilities.runOnUIThread(() -> {
+                    try {
+                        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                            NotificationCenter.getInstance(a).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+                        }
+                    } catch (Exception ignore) {}
+                });
             }
         } catch (Exception e) {
             FileLog.e(e);
         }
+    }
+
+    public void checkRemoteBadges() {
+        Utilities.globalQueue.postRunnable(this::fetchRemoteBadges);
     }
 
     public ApiBadgeSource getApiBadgeSource() {
