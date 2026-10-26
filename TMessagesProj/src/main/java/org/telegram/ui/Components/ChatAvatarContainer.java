@@ -1245,8 +1245,14 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         org.telegram.tgnet.TLRPC.Chat c = parentFragment != null ? parentFragment.getCurrentChat() : null;
         com.exteragram.messenger.api.dto.BadgeDTO badge = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadge(u != null ? u : c);
         if (badge != null) {
-            Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
+            Drawable d = com.exteragram.messenger.badges.BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider, 19);
             if (d != null) {
+                if (titleTextView.getRightDrawable() instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                    if (titleTextView.getRightDrawable2() instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                        titleTextView.setRightDrawable2(null);
+                    }
+                    return;
+                }
                 if (titleTextView.getRightDrawable() == null) {
                     titleTextView.setRightDrawable(d);
                     titleTextView.setRightDrawableOnClick(v -> {
@@ -1254,6 +1260,9 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                             com.exteragram.messenger.badges.BadgesController.INSTANCE.showBadgeBulletin(parentFragment, badge, u != null ? u : c, resourcesProvider, currentAccount);
                         }
                     });
+                    if (titleTextView.getRightDrawable2() instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                        titleTextView.setRightDrawable2(null);
+                    }
                 } else if (titleTextView.getRightDrawable2() == null && !rightDrawableIsScamOrVerified && !rightDrawableIsScam) {
                     titleTextView.setRightDrawable2(d);
                     titleTextView.setRightDrawable2OnClick(v -> {
@@ -1262,6 +1271,13 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                         }
                     });
                 }
+            }
+        } else {
+            if (titleTextView.getRightDrawable() instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                titleTextView.setRightDrawable(null);
+            }
+            if (titleTextView.getRightDrawable2() instanceof com.plusgram.app.badges.PlusgramBadgeDrawable) {
+                titleTextView.setRightDrawable2(null);
             }
         }
     }
