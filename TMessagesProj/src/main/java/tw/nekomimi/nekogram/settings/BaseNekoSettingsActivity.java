@@ -167,6 +167,7 @@ public abstract class BaseNekoSettingsActivity extends BaseFragment {
         // При sectionRadius == 0 — стоковый плоский вид (карточки визуально отсутствуют).
         listView.setSections(dp(12), dp(com.plusgram.app.appearance.AppearanceConfig.sectionRadius()), true);
         setupAdaptiveBackground();
+        com.plusgram.app.appearance.MotionConfig.animateListEntrance(listView);
         return fragmentView;
     }
 

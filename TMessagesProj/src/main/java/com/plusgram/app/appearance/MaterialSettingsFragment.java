@@ -61,6 +61,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
         scroll.addView(content, params);
         fragmentView = scroll;
         buildContent();
+        MotionConfig.animateListEntrance(content);
         return fragmentView;
     }
     protected int dp(int n) { return AndroidUtilities.dp(n); }
@@ -76,7 +77,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
         LinearLayout card = new LinearLayout(context);
         card.setOrientation(LinearLayout.VERTICAL);
         int radius = AppearanceConfig.sectionRadius();
-        card.setBackground(Theme.createRoundRectDrawable(dp(Math.max(8, radius)), Theme.getColor(Theme.key_windowBackgroundWhite)));
+        card.setBackground(Theme.createRoundRectDrawable(dp(Math.max(8, radius)), MaterialExperience.surface(null)));
         card.setClipToOutline(true);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
         params.bottomMargin = dp(16);
@@ -108,6 +109,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
                     new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE)));
             row.setOnClickListener(v -> { MotionConfig.feedback(v); click.run(); });
             row.setFocusable(true);
+            MotionConfig.interactive(row);
         }
         card.addView(row);
         return detail;
@@ -128,6 +130,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
         row.addView(control, p);
         row.setContentDescription(getString(title));
         row.setFocusable(true);
+        MotionConfig.interactive(row);
         row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
             @Override public void onInitializeAccessibilityNodeInfo(View host, android.view.accessibility.AccessibilityNodeInfo info) {
                 super.onInitializeAccessibilityNodeInfo(host, info);

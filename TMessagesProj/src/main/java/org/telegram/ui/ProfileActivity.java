@@ -274,8 +274,6 @@ import org.telegram.ui.Components.ProfileGalleryView;
 import org.telegram.ui.Components.ProfileGooeyView;
 import org.telegram.ui.Components.ProfileMusicView;
 import com.plusgram.app.components.ProfileMusicCard;
-import com.exteragram.messenger.api.dto.BadgeDTO;
-import com.exteragram.messenger.badges.BadgesController;
 import org.telegram.ui.Components.RLottieDrawable;
 import org.telegram.ui.Components.RLottieImageView;
 import org.telegram.ui.Components.RadialProgressView;
@@ -413,7 +411,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private Long emojiStatusGiftId;
     private final AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[] emojiStatusDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[2];
     private final AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[] botVerificationDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[2];
-    private final AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[] badgeDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable[2];
     private final Drawable[] verifiedCheckDrawable = new Drawable[2];
     private final CrossfadeDrawable[] verifiedCrossfadeDrawable = new CrossfadeDrawable[2];
     private final CrossfadeDrawable[] premiumCrossfadeDrawable = new CrossfadeDrawable[2];
@@ -3583,11 +3580,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         botVerificationDrawable[i].attach();
                     }
                 }
-                for (int i = 0; i < badgeDrawable.length; ++i) {
-                    if (badgeDrawable[i] != null) {
-                        badgeDrawable[i].attach();
-                    }
-                }
+
             }
 
             @Override
@@ -3604,11 +3597,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         botVerificationDrawable[i].detach();
                     }
                 }
-                for (int i = 0; i < badgeDrawable.length; ++i) {
-                    if (badgeDrawable[i] != null) {
-                        badgeDrawable[i].detach();
-                    }
-                }
+
             }
         };
 
@@ -11684,22 +11673,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         return emojiStatusDrawable[a];
     }
 
-    private Drawable getBadgeDrawable(BadgeDTO badge, boolean animated, int a) {
-        Drawable customBadge = BadgesController.INSTANCE.getBadgeDrawable(badge, resourcesProvider);
-        if (customBadge != null) {
-            return customBadge;
-        }
-        if (badgeDrawable[a] == null) {
-            badgeDrawable[a] = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(nameTextView[a], AndroidUtilities.dp(24), a == 0 ? AnimatedEmojiDrawable.CACHE_TYPE_EMOJI_STATUS : AnimatedEmojiDrawable.CACHE_TYPE_KEYBOARD);
-            if (fragmentViewAttached) {
-                badgeDrawable[a].attach();
-            }
-        }
-        badgeDrawable[a].set(badge.getDocumentId(), animated);
-        badgeDrawable[a].setParticles(false, animated);
-        updateEmojiStatusDrawableColor();
-        return badgeDrawable[a];
-    }
+
 
     private float lastEmojiStatusProgress;
 
@@ -11722,9 +11696,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (botVerificationDrawable[a] != null) {
                 botVerificationDrawable[a].setColor(ColorUtils.blendARGB(ColorUtils.blendARGB(fromColor, 0x99ffffff, progress), getThemedColor(Theme.key_player_actionBarTitle), mediaHeaderAnimationProgress));
             }
-            if (badgeDrawable[a] != null) {
-                badgeDrawable[a].setColor(ColorUtils.blendARGB(ColorUtils.blendARGB(fromColor, 0x99ffffff, progress), getThemedColor(Theme.key_player_actionBarTitle), mediaHeaderAnimationProgress));
-            }
+
             if (a == 1) {
                 animatedStatusView.setColor(color);
             }
@@ -12001,7 +11973,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 boolean rightIconIsPremium = false, rightIconIsStatus = false;
                 nameTextView[a].setRightDrawableOutside(a == 0);
                 if (a == 0 && !copyFromChatActivity) {
-                    BadgeDTO userBadge = BadgesController.INSTANCE.getBadge(user);
                     nameTextView[a].setRightDrawable2OnClick(null);
                     if (user.scam || user.fake) {
                         nameTextView[a].setRightDrawable2(getScamDrawable(user.scam ? 0 : 1));
@@ -12009,10 +11980,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else if (user.verified) {
                         nameTextView[a].setRightDrawable2(getVerifiedCrossfadeDrawable(a));
                         nameTextViewRightDrawable2ContentDescription = LocaleController.getString(R.string.AccDescrVerified);
-                    } else if (userBadge != null) {
-                        nameTextView[a].setRightDrawable2(getBadgeDrawable(userBadge, false, a));
-                        nameTextView[a].setRightDrawable2OnClick(v -> BadgesController.INSTANCE.showBadgeBulletin(this, userBadge, user, resourcesProvider, currentAccount));
-                        nameTextViewRightDrawable2ContentDescription = userBadge.getText();
                     } else if (getMessagesController().isDialogMuted(dialogId != 0 ? dialogId : userId, topicId)) {
                         nameTextView[a].setRightDrawable2(getThemedDrawable(Theme.key_drawable_muteIconDrawable));
                         nameTextViewRightDrawable2ContentDescription = LocaleController.getString(R.string.NotificationsMuted);
@@ -12042,15 +12009,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         nameTextViewRightDrawableContentDescription = null;
                     }
                 } else if (a == 1) {
-                    BadgeDTO userBadge = BadgesController.INSTANCE.getBadge(user);
                     nameTextView[a].setRightDrawable2OnClick(null);
                     if (user.scam || user.fake) {
                         nameTextView[a].setRightDrawable2(getScamDrawable(user.scam ? 0 : 1));
                     } else if (user.verified) {
                         nameTextView[a].setRightDrawable2(getVerifiedCrossfadeDrawable(a));
-                    } else if (userBadge != null) {
-                        nameTextView[a].setRightDrawable2(getBadgeDrawable(userBadge, true, a));
-                        nameTextView[a].setRightDrawable2OnClick(v -> BadgesController.INSTANCE.showBadgeBulletin(this, userBadge, user, resourcesProvider, currentAccount));
                     } else {
                         nameTextView[a].setRightDrawable2(null);
                     }
@@ -12348,7 +12311,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 nameTextView[a].setRightDrawableOutside(a == 0);
                 nameTextView[a].setRightDrawableOnClick(null);
                 if (a != 0) {
-                    BadgeDTO chatBadge = BadgesController.INSTANCE.getBadge(chat);
                     nameTextView[a].setRightDrawable2OnClick(null);
                     if (chat.scam || chat.fake) {
                         nameTextView[a].setRightDrawable2(getScamDrawable(chat.scam ? 0 : 1));
@@ -12356,11 +12318,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else if (chat.verified) {
                         nameTextView[a].setRightDrawable2(getVerifiedCrossfadeDrawable(a));
                         nameTextViewRightDrawableContentDescription = LocaleController.getString(R.string.AccDescrVerified);
-                    } else if (chatBadge != null) {
-                        nameTextView[a].setRightDrawable2(getBadgeDrawable(chatBadge, true, a));
-                        final TLRPC.Chat badgeChat = chat;
-                        nameTextView[a].setRightDrawable2OnClick(v -> BadgesController.INSTANCE.showBadgeBulletin(this, chatBadge, badgeChat, resourcesProvider, currentAccount));
-                        nameTextViewRightDrawableContentDescription = chatBadge.getText();
                     } else {
                         nameTextView[a].setRightDrawable2(null);
                         nameTextViewRightDrawableContentDescription = null;

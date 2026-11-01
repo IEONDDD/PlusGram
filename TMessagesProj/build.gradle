@@ -42,7 +42,7 @@ def buildTimestamp = System.getenv('BUILD_TIMESTAMP') ?: '0'
 def commitId = System.getenv('COMMIT_ID')
 def shortCommit = commitId?.take(7) ?: ''
 def verName = "${APP_VERSION_NAME}${shortCommit ? "-${shortCommit}" : ''}"
-def verCode = 1
+def verCode = APP_VERSION_CODE.toInteger()
 
 def officialVer = APP_VERSION_NAME
 def officialCode = APP_VERSION_CODE
@@ -299,9 +299,28 @@ android {
         }
     }
 
-    sourceSets.main.jniLibs.srcDirs = ['./jni/']
+    sourceSets.main.jniLibs.srcDirs = ['./jni/', layout.buildDirectory.dir('generated/bypassJni')]
 
     namespace = 'org.telegram.messenger'
+}
+
+// Compile the audited Go source instead of distributing an opaque upstream binary.
+if (nativeTarget != 'SKIP') {
+    def bypassTasks = android.defaultConfig.ndk.abiFilters.collect { String abi ->
+        tasks.register("buildBypass${abi.replace('-', '').replace('_', '')}", Exec) {
+            inputs.dir(rootProject.file('third_party/soundgram-bypass'))
+            inputs.file(rootProject.file('Tools/build_bypass.py'))
+            outputs.dir(layout.buildDirectory.dir("generated/bypassJni/${abi}"))
+            doFirst {
+                commandLine chaquopyBuildPython ?: 'python3', rootProject.file('Tools/build_bypass.py'),
+                        '--ndk', androidComponents.sdkComponents.ndkDirectory.get().asFile,
+                        '--abi', abi, '--out', layout.buildDirectory.dir("generated/bypassJni/${abi}").get().asFile
+            }
+        }
+    }
+    tasks.configureEach { task ->
+        if (task.name.startsWith('merge') && task.name.endsWith('JniLibFolders')) task.dependsOn(bypassTasks)
+    }
 }
 
 androidComponents {
@@ -331,13 +350,13 @@ def chaquopyRuntimeTasks = chaquopyAbis.collect { String abi ->
                 "com.chaquo.python:target:${chaquopyTarget.key}-${chaquopyTarget.value}:${abi}@zip"))
         def outputDir = new File(chaquopyRuntimeDir, abi)
         inputs.files(fileTree(chaquopySourceDir) {
-            include 'exteraless/build.sh'
             include 'product/runtime/CMakeLists.txt'
             include 'product/runtime/src/main/c/**'
             include 'product/runtime/src/main/python/**/*.pyx'
             include 'product/runtime/src/main/python/**/*.pxi'
             include 'product/runtime/src/main/python/**/*.pxd'
         }).withPathSensitivity(PathSensitivity.RELATIVE)
+        inputs.file(rootProject.file('Tools/build_chaquopy_runtime.sh'))
         inputs.files(targetZip).withPathSensitivity(PathSensitivity.NAME_ONLY)
         outputs.dir(outputDir)
                 def bashBin = 'bash'
@@ -348,7 +367,8 @@ def chaquopyRuntimeTasks = chaquopyAbis.collect { String abi ->
                 bashBin = 'C:/Program Files/Git/usr/bin/bash.exe'
             }
         }
-        commandLine bashBin, new File(chaquopySourceDir, 'exteraless/build.sh').path
+        commandLine bashBin, rootProject.file('Tools/build_chaquopy_runtime.sh').path
+        environment('SRC', new File(chaquopySourceDir, 'product/runtime').path)
         environment('ABI', abi)
         environment('OUT', outputDir.path)
         environment('WORKSPACE', layout.buildDirectory.dir('chaquopy/work').get().asFile.path)
@@ -359,6 +379,7 @@ def chaquopyRuntimeTasks = chaquopyAbis.collect { String abi ->
                 throw new GradleException('Chaquopy sources are missing, run: git submodule update --init TMessagesProj/chaquopy')
             }
             environment('NDK', androidComponents.sdkComponents.ndkDirectory.get().asFile.path)
+            environment('ANDROID_HOME', androidComponents.sdkComponents.sdkDirectory.get().asFile.path)
             environment('PYTHON_TARGET_ZIP', targetZip.singleFile.path)
         }
     }
@@ -405,6 +426,7 @@ configurations.configureEach {
 }
 
 dependencies {
+    implementation 'androidx.work:work-runtime:2.9.0'
     // official
     implementation 'androidx.core:core-ktx:1.19.0'
     implementation 'androidx.palette:palette-ktx:1.0.0'

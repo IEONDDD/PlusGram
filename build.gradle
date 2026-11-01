@@ -19,6 +19,11 @@ plugins {
 
 subprojects {
     afterEvaluate {
+        // Media3 modules without a consumer rule file must also build on a clean
+        // submodule checkout; do not depend on uncommitted submodule patches.
+        if (plugins.hasPlugin("com.android.library")) {
+            android.defaultConfig.consumerProguardFiles.removeAll { !it.exists() }
+        }
         if (plugins.hasPlugin("com.android.application")) {
             android {
                 compileSdk = 37
