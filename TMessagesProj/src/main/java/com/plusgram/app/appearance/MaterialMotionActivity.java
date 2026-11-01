@@ -35,6 +35,7 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
             AppearanceConfig.sectionRadius.setConfigInt(24);
             NaConfig.INSTANCE.getSliderStyle().setConfigInt(2);
             NaConfig.INSTANCE.getSwitchStyle().setConfigInt(Switch.SWITCH_STYLE_M3);
+            NaConfig.INSTANCE.getBackAnimationStyle().setConfigInt(2);
             if (MainTabsLayout.isBottomNavigationFloating())
                 MainTabsLayout.setBottomNavigationMode(MainTabsLayout.BOTTOM_NAVIGATION_MODE_SHOW);
             if (MaterialYouController.isAvailable()) MaterialYouController.apply(MaterialYouController.SYSTEM);
@@ -81,6 +82,8 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
                         MotionConfig.prefs().edit().putInt("duration", new int[]{50,100,150,200}[index]).apply()));
         toggle(motion, R.string.PlusgramMotionPress, MotionConfig.prefs().getBoolean("press", true),
                 value -> MotionConfig.prefs().edit().putBoolean("press", value).apply());
+        toggle(motion, R.string.PlusgramMotionEntrance, MotionConfig.prefs().getBoolean("entrance", true),
+                value -> MotionConfig.prefs().edit().putBoolean("entrance", value).apply());
         toggle(motion, R.string.PlusgramMotionHaptics, MotionConfig.prefs().getBoolean("haptics", true),
                 value -> MotionConfig.prefs().edit().putBoolean("haptics", value).apply());
         row(motion, R.string.PlusgramMotionReset, null, () -> {

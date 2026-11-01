@@ -329,6 +329,12 @@ public class ActionBarMenuItem extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!isSearchField()) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
+                com.plusgram.app.appearance.MotionConfig.animatePress(this, true);
+            else if (event.getActionMasked() == MotionEvent.ACTION_UP || event.getActionMasked() == MotionEvent.ACTION_CANCEL)
+                com.plusgram.app.appearance.MotionConfig.animatePress(this, false);
+        }
         if (parentMenu != null && !isSearchField() && parentMenu.searchFieldVisible()) {
             setPressed(false);
             return true;

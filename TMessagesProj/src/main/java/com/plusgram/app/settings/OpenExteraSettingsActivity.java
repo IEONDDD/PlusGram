@@ -33,7 +33,6 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
     private int generalRow;
     private int appearanceRow;
     private int chatsRow;
-    private int badgesRow;
     private int tgwsRow;
     private int pluginsRow;
     private int otherRow;
@@ -55,7 +54,6 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
         generalRow = addRow("general");
         appearanceRow = addRow("appearance");
         chatsRow = addRow("chats");
-        badgesRow = addRow("badges");
         tgwsRow = addRow("bypass");
         pluginsRow = addRow("plugins");
         otherRow = addRow("other");
@@ -173,8 +171,6 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
             presentFragment(new OpenExteraAppearanceActivity());
         } else if (position == chatsRow) {
             presentFragment(new OpenExteraChatsActivity());
-        } else if (position == badgesRow) {
-            presentFragment(new com.plusgram.app.badges.BadgesSettingsActivity());
         } else if (position == tgwsRow) {
             presentFragment(new com.plusgram.app.proxy.tgws.TgwsSettingsActivity());
         } else if (position == pluginsRow) {
@@ -233,8 +229,6 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
                         cell.setTextAndIcon(getString(R.string.OpenExteraAppearance), R.drawable.msg_theme, true);
                     } else if (position == chatsRow) {
                         cell.setTextAndIcon(getString(R.string.OpenExteraChats), R.drawable.msg_discussion, true);
-                    } else if (position == badgesRow) {
-                        cell.setTextAndIcon(getString(R.string.PlusgramBadgesTitle), R.drawable.settings_stars, true);
                     } else if (position == tgwsRow) {
                         cell.setTextAndValueAndIcon(getString(R.string.PlusgramTgwsTitle),
                                 com.plusgram.app.proxy.tgws.TgwsService.statusText(), R.drawable.msg_secret, true);

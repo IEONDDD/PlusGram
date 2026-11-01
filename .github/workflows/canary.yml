@@ -44,6 +44,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - name: Set up Go for SoundGram Bypass
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
       - name: Set up Python for Chaquopy
         uses: actions/setup-python@v5
         with:

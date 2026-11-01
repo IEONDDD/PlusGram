@@ -518,13 +518,13 @@
         </receiver>
 
         <service
-            android:name="com.plusgram.app.proxy.tgws.TgwsService"
+            android:name="com.plusgram.app.proxy.bypass.TgWsProxyService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="User enabled local MTProto WebSocket proxy for Telegram connectivity" />
         </service>
-        <receiver android:name="com.plusgram.app.proxy.tgws.TgwsBootReceiver" android:exported="false">
+        <receiver android:name="com.plusgram.app.proxy.bypass.BootReceiver" android:exported="false">
             <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /></intent-filter>
         </receiver>
         <service

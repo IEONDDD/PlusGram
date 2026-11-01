@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="PlusgramMotionEntrance">Анимация настроек и Bypass</string>
     <string name="PlusgramFeedback">Обратная связь и ошибки</string>
     <string name="PlusgramMaterialYou">Цвета Material You</string>
     <string name="PlusgramMaterialYouOff">Выключено / прежняя тема</string>

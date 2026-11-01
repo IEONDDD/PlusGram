@@ -445,6 +445,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
         instance = this;
         ApplicationLoader.postInitApplication();
+        com.plusgram.app.appearance.MaterialExperience.initialize();
         com.plusgram.app.proxy.tgws.TgwsService.onAppStart();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;

@@ -1811,10 +1811,10 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
             appendOpenAnimator(true, animators);
             currentSheetAnimation.playTogether(animators);
             if (transitionFromRight) {
-                currentSheetAnimation.setDuration(250);
+                currentSheetAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(250));
                 currentSheetAnimation.setInterpolator(CubicBezierInterpolator.DEFAULT);
             } else {
-                currentSheetAnimation.setDuration(openDuration);
+                currentSheetAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(openDuration));
                 currentSheetAnimation.setInterpolator(openInterpolator);
             }
             currentSheetAnimation.setStartDelay(waitingKeyboard ? 0 : 20);
@@ -1942,7 +1942,7 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
                 anim,
                 ObjectAnimator.ofInt(backDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0)
         );
-        currentSheetAnimation.setDuration(cellType == Builder.CELL_TYPE_CALL ? 330 : 180);
+        currentSheetAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(cellType == Builder.CELL_TYPE_CALL ? 330 : 180));
         currentSheetAnimation.setInterpolator(CubicBezierInterpolator.EASE_OUT);
         currentSheetAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -2251,10 +2251,10 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
                 currentSheetAnimation.playTogether(animators);
 
                 if (transitionFromRight) {
-                    currentSheetAnimation.setDuration(200);
+                    currentSheetAnimation.setDuration(com.plusgram.app.appearance.MotionConfig.duration(200));
                     currentSheetAnimation.setInterpolator(CubicBezierInterpolator.DEFAULT);
                 } else {
-                    currentSheetAnimation.setDuration(duration = 250);
+                    currentSheetAnimation.setDuration(duration = com.plusgram.app.appearance.MotionConfig.duration(250));
                     currentSheetAnimation.setInterpolator(CubicBezierInterpolator.EASE_OUT);
                 }
                 currentSheetAnimation.addListener(new AnimatorListenerAdapter() {
