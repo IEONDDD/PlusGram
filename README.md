@@ -6,7 +6,7 @@
 Кастомный Android-клиент Telegram на базе exteraless / NagramX.
 
 [![Telegram Channel](https://img.shields.io/badge/Telegram-Канал%20с%20обновлениями-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/OPlusGram)
-[![GitHub Release](https://img.shields.io/badge/Release-v4.0.0-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
+[![GitHub Release](https://img.shields.io/badge/Release-v4.0.1-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
 </div>
 
 - **Telegram-канал (новости и обновления)**: https://t.me/OPlusGram
@@ -23,14 +23,11 @@
 
 «Применить стиль Material You» включает восемь стилей Material 3, карточки со скруглением 24 dp и скруглённую плавающую кнопку. На Android 12+ также выбирается системная тема Monet. Отдельные стили, радиус карточек и темы можно затем изменить на этом же экране. На Android 7–11 доступны формы Material 3 без динамической палитры. Выключение цветов возвращает прежние темы, но не отменяет отдельно выбранные формы и элементы.
 
-## Plusgram 4.0
+## Plusgram 4.0.1
 
-- Функция значков создателя/спонсора, список пользователей и бот выдачи значков удалены.
-- Полностью перенесён Bypass из SoundGram: Go-движок, JNI, экран настроек, Cloudflare, FakeTLS, DoH, пулы соединений, контроль сети, автоопределение блокировки, автозапуск и восстановление сервиса.
-- На первом запуске 4.0 применяется Material You: динамическая палитра Android 12+, карточки 28 dp, переключатели, слайдеры, шапки чатов, навигация и медиаплеер Material 3. Дальнейшие изменения темы сохраняются.
-- Добавлены появления экранов настроек и Bypass, обратная связь кнопок меню и дополнительных ячеек, общая настройка скорости нижних панелей. Системное отключение анимаций учитывается.
+Исправлено появление карточек Material You только после прокрутки: фон секций перерисовывается на каждом кадре появления строк.
 
-Источник Bypass: [soundgram-project/SoundGram](https://github.com/soundgram-project/SoundGram/tree/b489ce80fdc5390844902582d50b0476a6278d78). Версия и изменения интеграции описаны в `third_party/soundgram-bypass/README.md`. Работа обхода зависит от доступности внешних маршрутов и ограничений провайдера.
+Bypass полностью заменён оригинальным движком [Flowseal/tg-ws-proxy](https://github.com/Flowseal/tg-ws-proxy). Сетевые модули скопированы без изменений, Cloudflare включён по умолчанию. Версия исходников и лицензия находятся в `third_party/tg-ws-proxy`. Реализация SoundGram и Go/JNI-библиотеки удалены. Доступность зависит от сети и внешних маршрутов; универсальная работа у всех провайдеров не гарантируется.
 
 ## Проверка приватности релиза
 
@@ -49,9 +46,9 @@ cd plusgram
 
 Скопируйте `local.properties.example` в `local.properties`. Укажите `sdk.dir`, свой `TELEGRAM_APP_ID` (только цифры) и `TELEGRAM_APP_HASH` (32 шестнадцатеричных символа), **без `<` и `>`**. Данные также читаются из переменных окружения. Публичные ключи Telegram больше не подставляются автоматически.
 
-Параметры текущего форка: JDK 21, Gradle Wrapper 9.7.1, Android SDK 37 и SDK 35 (для Media3), Build Tools 36.0.0, NDK 27.2.12479018, CMake 3.31.6+, Python 3.11 и Go 1.27.3. При необходимости задайте путь к Python в `CHAQUOPY_BUILD_PYTHON`.
+Параметры текущего форка: JDK 21, Gradle Wrapper 9.7.1, Android SDK 37 и SDK 35 (для Media3), Build Tools 36.0.0, NDK 27.2.12479018, CMake 3.31.6+, Python 3.11. При необходимости задайте путь к Python в `CHAQUOPY_BUILD_PYTHON`.
 
-Сборка Chaquopy использует Bash-скрипт собственного runtime. Поддерживаются Linux / WSL2 и Windows с Git Bash. На Windows установите Go в PATH и задайте путь к Python 3.11 в `CHAQUOPY_BUILD_PYTHON`. Bypass собирается из Go-исходников автоматически для выбранных ABI, а не загружается в виде готовой библиотеки.
+Сборка Chaquopy использует Bash-скрипт собственного runtime. Поддерживаются Linux / WSL2 и Windows с Git Bash. На Windows задайте путь к Python 3.11 в `CHAQUOPY_BUILD_PYTHON`. Оригинальный TGWS работает через встроенный Python runtime; для AES используется Android JCA.
 
 ```sh
 export NATIVE_TARGET=arm64-v8a

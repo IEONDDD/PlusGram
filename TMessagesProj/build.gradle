@@ -299,28 +299,9 @@ android {
         }
     }
 
-    sourceSets.main.jniLibs.srcDirs = ['./jni/', layout.buildDirectory.dir('generated/bypassJni')]
+    sourceSets.main.jniLibs.srcDirs = ['./jni/']
 
     namespace = 'org.telegram.messenger'
-}
-
-// Compile the audited Go source instead of distributing an opaque upstream binary.
-if (nativeTarget != 'SKIP') {
-    def bypassTasks = android.defaultConfig.ndk.abiFilters.collect { String abi ->
-        tasks.register("buildBypass${abi.replace('-', '').replace('_', '')}", Exec) {
-            inputs.dir(rootProject.file('third_party/soundgram-bypass'))
-            inputs.file(rootProject.file('Tools/build_bypass.py'))
-            outputs.dir(layout.buildDirectory.dir("generated/bypassJni/${abi}"))
-            doFirst {
-                commandLine chaquopyBuildPython ?: 'python3', rootProject.file('Tools/build_bypass.py'),
-                        '--ndk', androidComponents.sdkComponents.ndkDirectory.get().asFile,
-                        '--abi', abi, '--out', layout.buildDirectory.dir("generated/bypassJni/${abi}").get().asFile
-            }
-        }
-    }
-    tasks.configureEach { task ->
-        if (task.name.startsWith('merge') && task.name.endsWith('JniLibFolders')) task.dependsOn(bypassTasks)
-    }
 }
 
 androidComponents {

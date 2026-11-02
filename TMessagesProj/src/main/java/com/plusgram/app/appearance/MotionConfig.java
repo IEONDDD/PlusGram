@@ -79,7 +79,8 @@ public final class MotionConfig {
                     // Leave translations to RecyclerView's item animator.
                     child.animate().alpha(1f).setStartDelay(duration(i * 24L))
                             .setDuration(duration(280)).setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT)
-                            .withEndAction(() -> child.animate().setStartDelay(0)).start();
+                            .setUpdateListener(animation -> list.invalidate())
+                            .withEndAction(() -> { child.animate().setStartDelay(0); child.animate().setUpdateListener(null); list.invalidate(); }).start();
                 }
                 return true;
             }
@@ -89,6 +90,7 @@ public final class MotionConfig {
                     @Override public void onChildViewAttachedToWindow(View view) {}
                     @Override public void onChildViewDetachedFromWindow(View view) {
                         view.animate().cancel();
+                        view.animate().setUpdateListener(null);
                         view.animate().setStartDelay(0);
                         view.setAlpha(1f); view.setScaleX(1f); view.setScaleY(1f);
                     }
