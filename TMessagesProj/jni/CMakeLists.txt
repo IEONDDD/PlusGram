@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-# SoundGram-derived JNI bridge loads our Go engine compiled from vendored source.
-add_library(tgwsproxy_jni SHARED bypass_jni.c)
-target_link_options(tgwsproxy_jni PRIVATE "-Wl,-z,max-page-size=16384")
-target_link_libraries(tgwsproxy_jni log dl)
-
 set(CMAKE_CXX_STANDARD 17)
 
 # Do not bake workstation paths into __FILE__ strings or native debug metadata.

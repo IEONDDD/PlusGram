@@ -949,7 +949,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                     org.telegram.ui.Cells.TextDetailSettingsCell cell = (org.telegram.ui.Cells.TextDetailSettingsCell) holder.itemView;
                     cell.setTextAndValueAndIcon(getString(R.string.PlusgramTgwsTitle),
                             com.plusgram.app.proxy.tgws.TgwsService.statusText(), R.drawable.msg_settings, true);
-                    String st = com.plusgram.app.proxy.bypass.TgWsProxyService.isRunning ? "running" : "off";
+                    String st = com.plusgram.app.proxy.tgws.TgwsService.state;
                     if ("running".equals(st)) {
                         cell.getValueTextView().setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText));
                     } else if ("error".equals(st)) {
