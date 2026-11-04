@@ -4256,15 +4256,11 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
 
         BlurredBackgroundProvider colorProvider = new BlurredBackgroundProviderBuilder(resourcesProvider)
             .setBackgroundColor((r, isDark) -> {
-                final float alpha = LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS) ? 0.85f : 0.76f;
-                final int colorBg = Theme.getColor(isDark ? Theme.key_windowBackgroundGray : Theme.key_dialogBackgroundGray, r);
-                final int colorTarget = Theme.getColor(Theme.key_windowBackgroundWhite, r);
+                final int surface = com.plusgram.app.appearance.MaterialExperience.surface(r);
                 if (hasOverridenWebviewBackgroundColor) {
-                    return //overridenWebviewBackgroundColor;
-                             ColorUtils.blendARGB(colorTarget, overridenWebviewBackgroundColor, 0.75f);
+                    return ColorUtils.blendARGB(surface, overridenWebviewBackgroundColor, 0.75f);
                 }
-
-                return BlurredBackgroundProviderImpl.solveSrcColor(colorBg, colorTarget, alpha);
+                return surface;
             })
             .setStrokeColorTop((r, isDark) -> hasOverridenWebviewBackgroundColor ? 0 : isDark ? 0x28FFFFFF : 0xFFFFFFFF)
             .setStrokeColorBottom((r, isDark) -> hasOverridenWebviewBackgroundColor ? 0 : isDark ? 0x14FFFFFF : 0xFFFFFFFF)

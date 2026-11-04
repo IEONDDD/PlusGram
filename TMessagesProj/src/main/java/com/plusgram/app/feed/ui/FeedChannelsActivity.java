@@ -125,8 +125,7 @@ public class FeedChannelsActivity extends BaseFragment implements NotificationCe
 
         listView = new UniversalRecyclerView(this, this::fillItems, this::onClick,
                 (item, view, position, x, y) -> false);
-        listView.setSections();
-        listView.adapter.setApplyBackground(false);
+        listView.setMaterialSettingsSections();
         listView.setClipToPadding(false);
         contentView.addView(listView,
                 LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));

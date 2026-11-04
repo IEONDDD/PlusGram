@@ -139,8 +139,7 @@ public class SettingsRegistry {
     private static final Map<Class<? extends BaseFragment>, Integer> categoriesIcons = buildIcons();
 
     public static List<String> newFeatures = new ArrayList<>(Arrays.asList(
-            "customSavePath", "zoomSlider", "widePosts", "aiFeatures", "hideDialogsSearchBar",
-            "glassOutlineStyle", "glassMessageMenu"));
+            "customSavePath", "zoomSlider", "widePosts", "aiFeatures", "hideDialogsSearchBar"));
 
     private final ConcurrentHashMap<Integer, Entry> preparedEntries = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Entry> entriesStringAlias = new ConcurrentHashMap<>();

@@ -147,8 +147,7 @@ public class PluginsActivity extends BaseFragment {
                         && super.canHighlightChildAt(child, x, y);
             }
         };
-        listView.setSections();
-        listView.adapter.setApplyBackground(false);
+        listView.setMaterialSettingsSections();
         contentView.addView(listView,
                 LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         actionBar.setAdaptiveBackground(listView);

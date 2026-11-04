@@ -2288,6 +2288,7 @@ public class OpenExteraChatsActivity extends BaseNekoSettingsActivity {
             addView(sizeBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38,
                     Gravity.LEFT | Gravity.TOP, 9, 78, 9, 0));
 
+            Theme.createChatResources(context, false);
             messagesCell = new StickerSizePreviewMessagesCell(context, OpenExteraChatsActivity.this);
             addView(messagesCell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT,
                     LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 126, 0, 0));
@@ -2406,7 +2407,9 @@ public class OpenExteraChatsActivity extends BaseNekoSettingsActivity {
          */
         @Override
         protected boolean isSectionContent(int viewType) {
-            if (viewType == TYPE_EXPANDABLE_SWITCH || viewType == TYPE_ROUND_CHECK
+            if (viewType == TYPE_STICKER_SIZE || viewType == TYPE_STICKER_SHAPE
+                    || viewType == TYPE_DOUBLE_TAP || viewType == TYPE_SET_REACTION
+                    || viewType == TYPE_EXPANDABLE_SWITCH || viewType == TYPE_ROUND_CHECK
                     || viewType == TYPE_WIDE_CHANNEL_PREVIEW) {
                 return true;
             }
@@ -3019,8 +3022,6 @@ public class OpenExteraChatsActivity extends BaseNekoSettingsActivity {
                 cell.setText(getString(R.string.OEChatsHideSendAsPeerInfo));
             } else if (position == linkConfirmationsDividerRow) {
                 cell.setText(getString(R.string.OEChatsStripTrackingInfo));
-            } else if (position == menusDividerRow) {
-                cell.setText(getString(R.string.OEChatsGlassMessageMenuInfo));
             } else if (position == channelPostsDividerRow) {
                 cell.setText(getString(R.string.OEChatsWideChannelPostsFooter));
             } else if (position == cameraDividerRow) {

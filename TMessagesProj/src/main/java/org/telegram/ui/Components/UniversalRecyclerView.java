@@ -452,6 +452,12 @@ public class UniversalRecyclerView extends RecyclerListView {
         }
     }
 
+    public void setMaterialSettingsSections() {
+        setSectionBackgroundColor(com.plusgram.app.appearance.MaterialExperience::surface);
+        setSections();
+        adapter.setApplyBackground(false);
+    }
+
     public void setSections() {
         setSections(dp(12), dp(com.plusgram.app.appearance.AppearanceConfig.sectionRadius()), false);
     }

@@ -3813,6 +3813,11 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
     private final static Path sectionBackgroundPath = new Path();
     private final static float[] radii = new float[8];
     public static void drawBackgroundRect(Canvas canvas, RectF rect, float topRadius, float bottomRadius, float alpha, Theme.ResourcesProvider resourcesProvider) {
+        drawBackgroundRect(canvas, rect, topRadius, bottomRadius, alpha,
+                Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider));
+    }
+
+    private static void drawBackgroundRect(Canvas canvas, RectF rect, float topRadius, float bottomRadius, float alpha, int surface) {
         if (SharedConfig.shadowsInSections) {
             sectionBackgroundStrokePaint.setShadowLayer(dpf2(0.33f), 0, 0, multAlpha(0x0c000000, alpha));
             sectionBackgroundStrokePaint.setColor(0);
@@ -3820,7 +3825,7 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
         } else {
             sectionBackgroundPaint.setShadowLayer(0, 0, 0, 0);
         }
-        sectionBackgroundPaint.setColor(multAlpha(Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider), alpha));
+        sectionBackgroundPaint.setColor(multAlpha(surface, alpha));
         if (topRadius == bottomRadius) {
             if (SharedConfig.shadowsInSections) {
                 canvas.drawRoundRect(rect, topRadius, topRadius, sectionBackgroundStrokePaint);
@@ -3838,7 +3843,17 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
         }
     }
     public void drawBackgroundRect(Canvas canvas, RectF rect, float topRadius, float bottomRadius, float alpha) {
-        drawBackgroundRect(canvas, rect, topRadius, bottomRadius, alpha, resourcesProvider);
+        final int color = sectionBackgroundColor != null && sectionRadius > 0
+                ? sectionBackgroundColor.run(resourcesProvider)
+                : Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
+        drawBackgroundRect(canvas, rect, topRadius, bottomRadius, alpha, color);
+    }
+
+    private Utilities.CallbackReturn<Theme.ResourcesProvider, Integer> sectionBackgroundColor;
+
+    public void setSectionBackgroundColor(Utilities.CallbackReturn<Theme.ResourcesProvider, Integer> color) {
+        sectionBackgroundColor = color;
+        invalidate();
     }
 
     private final Path clipPath = new Path();

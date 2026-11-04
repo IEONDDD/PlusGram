@@ -1,7 +1,5 @@
 package org.telegram.ui.Components.blur3;
 
-import com.plusgram.app.appearance.AppearanceConfig;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -19,7 +17,6 @@ public enum GlassOutlineStyle {
     /** Контура и тени нет. */
     HIDDEN;
 
-    private static final GlassOutlineStyle[] VALUES = values();
     private static final Set<Listener> listeners = Collections.newSetFromMap(new WeakHashMap<>());
 
     // made with <3 from uzbekgram
@@ -43,12 +40,7 @@ public enum GlassOutlineStyle {
         }
     }
 
-    /** Текущий стиль из настроек; неизвестное значение трактуется как {@link #GLARE}. */
     public static GlassOutlineStyle current() {
-        final int index = AppearanceConfig.glassOutlineStyle();
-        if (index < 0 || index >= VALUES.length) {
-            return GLARE;
-        }
-        return VALUES[index];
+        return HIDDEN;
     }
 }
