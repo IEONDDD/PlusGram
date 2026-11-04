@@ -309,6 +309,7 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
         SharedPrefsHelper.init(applicationContext);
         if (BuildConfig.FIREBASE_ENABLED) {
             FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(AndroidUtil.shouldEnableCrashlytics());
+            Utilities.globalQueue.postRunnable(com.plusgram.app.crash.CrashLog::reportOutOfMemory);
         }
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) { //TODO improve account
             UserConfig.getInstance(a).loadConfig();
@@ -907,6 +908,7 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
             com.plusgram.app.crash.CrashLog.record(thread, error);
             if (AndroidUtil.shouldReportCrashToCrashlytics(error)) {
                 if (crashlyticsHandler != null) {
+                    com.plusgram.app.crash.CrashLog.putCrashlyticsKeys(error);
                     crashlyticsHandler.uncaughtException(thread, error);
                     return;
                 }
