@@ -176,7 +176,6 @@ public class FabShapeCell extends LinearLayout {
     @Override
     public void invalidate() {
         super.invalidate();
-        setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
         for (int a = 0; a < 2; a++) {
             if (fabShape[a] != null) {
                 fabShape[a].invalidate();

@@ -166,8 +166,7 @@ public class PluginSettingsActivity extends BasePreferencesActivity {
         // пережить хук плагина, а хук срабатывает на возврате из fillItems.
         listView = new UniversalRecyclerView(this, this::fillItemsWithPermissions,
                 this::onClick, this::onLongClick);
-        listView.setSections();
-        listView.adapter.setApplyBackground(false);
+        listView.setMaterialSettingsSections();
         layoutManager = (LinearLayoutManager) listView.getLayoutManager();
         contentView.addView(listView,
                 LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));

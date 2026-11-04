@@ -219,7 +219,6 @@ public class ChatListPreviewCell extends FrameLayout {
         if (actionBar != null) {
             // Цвета ActionBar выставляются один раз в конструкторе, поэтому смену темы
             // надо донести руками — экран зовёт invalidate() в onResume.
-            setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
             actionBar.setItemsColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), false);
             statusDrawable.setColor(Theme.getColor(Theme.key_profile_verifiedBackground));
             actionBar.invalidate();

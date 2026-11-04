@@ -1127,6 +1127,11 @@ public class OpenExteraGeneralActivity extends BaseNekoSettingsActivity {
         }
 
         @Override
+        protected boolean isSectionContent(int viewType) {
+            return viewType == TYPE_SLIDE || super.isSectionContent(viewType);
+        }
+
+        @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position, boolean partial) {
             switch (holder.getItemViewType()) {
                 case TYPE_HEADER: {

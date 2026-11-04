@@ -213,8 +213,7 @@ public class PluginPermissionsActivity extends BaseFragment {
         contentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new UniversalRecyclerView(this, this::fillItems, this::onItemClick, null);
-        listView.setSections();
-        listView.adapter.setApplyBackground(false);
+        listView.setMaterialSettingsSections();
         contentView.addView(listView,
                 LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         actionBar.setAdaptiveBackground(listView);

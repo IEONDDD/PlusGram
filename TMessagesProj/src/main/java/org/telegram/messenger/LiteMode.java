@@ -42,7 +42,7 @@ public class LiteMode {
     public static final int FLAG_CHAT_SCALE = 32768;
     public static final int FLAG_CHAT_THANOS = 65536;
     public static final int FLAG_LIQUID_GLASS = 1 << 18;
-    public static final int FLAGS_CHAT = FLAG_CHAT_BACKGROUND | FLAG_CHAT_FORUM_TWOCOLUMN | FLAG_CHAT_SPOILER | FLAG_CHAT_BLUR | FLAG_CHAT_SCALE | FLAG_CHAT_THANOS | FLAG_LIQUID_GLASS;
+    public static final int FLAGS_CHAT = FLAG_CHAT_BACKGROUND | FLAG_CHAT_FORUM_TWOCOLUMN | FLAG_CHAT_SPOILER | FLAG_CHAT_SCALE | FLAG_CHAT_THANOS;
 
     public static final int FLAG_CALLS_ANIMATIONS = 512;
     public static final int FLAG_AUTOPLAY_VIDEOS = 1024;
@@ -118,7 +118,8 @@ public class LiteMode {
                 onPowerSaverApplied(lastPowerSaverApplied = false);
             }
         }
-        return value;
+        // Mask legacy preferences and presets that enabled glass effects.
+        return value & ~(FLAG_LIQUID_GLASS | FLAG_CHAT_BLUR);
     }
 
     private static int lastBatteryLevelCached = -1;

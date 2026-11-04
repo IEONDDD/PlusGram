@@ -97,9 +97,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
 
     // Blur
     private int blurHeaderRow;
-    private int glassOutlineRow;
-    private int glassMessageMenuRow;
-    private int forceBlurRow;
     private int disableAvatarBlurRow;
     private int blurDividerRow;
 
@@ -250,9 +247,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
         sectionsDividerRow = addRow();
 
         blurHeaderRow = addRow("blurHeader");
-        glassOutlineRow = addRow("glassOutline");
-        glassMessageMenuRow = addRow("glassMessageMenu");
-        forceBlurRow = addRow("forceBlur");
         disableAvatarBlurRow = addRow("disableAvatarBlur");
         blurDividerRow = addRow();
 
@@ -678,13 +672,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                     getString(R.string.OEAppearanceDividerSegments)
             }, AppearanceConfig.dividerStyle, this::onDividerStyleChanged);
             return;
-        } else if (position == glassOutlineRow) {
-            showSelector(position, getString(R.string.OEAppearanceGlassOutline), new CharSequence[]{
-                    getString(R.string.OEAppearanceGlassOutlineGlare),
-                    getString(R.string.OEAppearanceGlassOutlineSolid),
-                    getString(R.string.OEAppearanceGlassOutlineHidden)
-            }, AppearanceConfig.glassOutlineStyle, null);
-            return;
         } else if (position == tabTitleStyleRow) {
             if (getParentActivity() == null) {
                 return;
@@ -758,40 +745,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
             }
             rebuildAll();
             if (enabled) {
-                showPowerSaverNotice();
-            }
-            return;
-        } else if (position == forceBlurRow) {
-            boolean enabled = !LiteMode.isEnabledSetting(LiteMode.FLAG_CHAT_BLUR);
-            LiteMode.toggleFlag(LiteMode.FLAG_CHAT_BLUR, enabled);
-            if (view instanceof TextCheckCell) {
-                ((TextCheckCell) view).setChecked(enabled);
-            }
-            rebuildAll();
-            if (enabled) {
-                showPowerSaverNotice();
-            }
-            return;
-        } else if (position == glassMessageMenuRow) {
-            boolean enabled = AppearanceConfig.glassMessageMenu.toggleConfigBool();
-            if (view instanceof TextCheckCell) {
-                ((TextCheckCell) view).setChecked(enabled);
-            }
-            // Стеклянное меню рисуется поверх
-            // блюра, и без него настройка не даёт ничего видимого, поэтому предлагаем включить.
-            if (enabled && !LiteMode.isEnabledSetting(LiteMode.FLAG_CHAT_BLUR) && getParentActivity() != null) {
-                BulletinFactory.of(this)
-                        .createSimpleBulletin(R.raw.info,
-                                getString(R.string.OEAppearanceGlassMessageMenuBlurOff),
-                                getString(R.string.Enable),
-                                () -> {
-                                    LiteMode.toggleFlag(LiteMode.FLAG_CHAT_BLUR, true);
-                                    notifyRow(forceBlurRow);
-                                    rebuildAll();
-                                    showPowerSaverNotice();
-                                })
-                        .show();
-            } else if (enabled) {
                 showPowerSaverNotice();
             }
             return;
@@ -922,6 +875,14 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
         }
 
         @Override
+        protected boolean isSectionContent(int viewType) {
+            return viewType == TYPE_AVATAR_CORNERS || viewType == TYPE_CHAT_LIST
+                    || viewType == TYPE_FOLDERS || viewType == TYPE_SECTION_SLIDER
+                    || viewType == TYPE_EXPANDABLE_SWITCH || viewType == TYPE_ROUND_CHECK
+                    || viewType == TYPE_FAB_SHAPE || super.isSectionContent(viewType);
+        }
+
+        @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position, boolean partial) {
             switch (holder.getItemViewType()) {
                 case TYPE_HEADER: {
@@ -958,10 +919,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceCustomThemes), AppearanceConfig.customThemes.Bool(), false);
                     } else if (position == separateHeadersRow) {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceSeparateHeaders), AppearanceConfig.sectionsSeparatedHeaders(), true);
-                    } else if (position == glassMessageMenuRow) {
-                        cell.setTextAndValueAndCheck(getString(R.string.OEAppearanceGlassMessageMenu), getString(R.string.OEAppearanceGlassMessageMenuInfo), AppearanceConfig.glassMessageMenu.Bool(), true, true);
-                    } else if (position == forceBlurRow) {
-                        cell.setTextAndCheck(getString(R.string.OEAppearanceForceBlur), LiteMode.isEnabledSetting(LiteMode.FLAG_CHAT_BLUR), true);
                     } else if (position == disableAvatarBlurRow) {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceDisableAvatarBlur), NaConfig.INSTANCE.getDisableAvatarBlur().Bool(), false);
                     } else if (position == singleCornerRadiusRow) {
@@ -1042,9 +999,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                     } else if (position == dividerStyleRow) {
                         String[] v = {getString(R.string.OEAppearanceDividerHidden), getString(R.string.OEAppearanceDividerLine), getString(R.string.OEAppearanceDividerSegments)};
                         cell.setTextAndValue(getString(R.string.OEAppearanceDividerStyle), v[clamp(AppearanceConfig.dividerStyle.Int(), v.length)], false);
-                    } else if (position == glassOutlineRow) {
-                        String[] v = {getString(R.string.OEAppearanceGlassOutlineGlare), getString(R.string.OEAppearanceGlassOutlineSolid), getString(R.string.OEAppearanceGlassOutlineHidden)};
-                        cell.setTextAndValue(getString(R.string.OEAppearanceGlassOutline), v[clamp(AppearanceConfig.glassOutlineStyle.Int(), v.length)], true);
                     } else if (position == tabTitleStyleRow) {
                         CharSequence[] v = tabTitleOptions();
                         cell.setTextAndValue(getString(R.string.OEAppearanceTabTitleStyle), v[tabTitleIndex(NekoConfig.tabsTitleType.Int())], true);
@@ -1167,7 +1121,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                     || position == md3PlayerRow || position == md3MiniPlayerRow
                     || position == iosNavBarRow || position == iosChatHeaderRow) {
                 return TYPE_ROUND_CHECK;
-            } else if (position == dividerStyleRow || position == glassOutlineRow
+            } else if (position == dividerStyleRow
                     || position == tabTitleStyleRow
                     || position == tabCounterRow || position == titleTextRow) {
                 return TYPE_SETTINGS;

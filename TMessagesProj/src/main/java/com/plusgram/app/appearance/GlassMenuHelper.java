@@ -16,27 +16,16 @@ import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundProvider;
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundProviderBuilder;
-import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
 import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceBitmap;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 
-/**
- * Матовое стекло под меню сообщения и панелью реакций.
- *
- * <p>Ключ — {@link AppearanceConfig#glassMessageMenu()} (дефолт true, как в exteraGram).
- * Стекло включается только когда блюр реально доступен: тот же гейт, что и в exteraGram —
- * {@code BlurredBackgroundProviderImpl.checkBlurEnabled} (SharedConfig.chatBlurEnabled плюс
- * серверные флаги disableBlurInLight/DarkTheme). Если блюр недоступен — вызывающий код
- * должен оставить обычный popup, поведение при этом ровно прежнее.
- */
 public abstract class GlassMenuHelper {
 
     private GlassMenuHelper() {
     }
 
     public static boolean isEnabled(int currentAccount, Theme.ResourcesProvider resourcesProvider) {
-        return AppearanceConfig.glassMessageMenu()
-            && BlurredBackgroundProviderImpl.checkBlurEnabled(currentAccount, resourcesProvider);
+        return false;
     }
 
     /**

@@ -102,8 +102,7 @@ public class OpenExteraAppNavigationActivity extends BaseFragment {
         contentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new UniversalRecyclerView(this, this::fillItems, this::onItemClick, this::onItemLongClick);
-        listView.setSections();
-        listView.adapter.setApplyBackground(false);
+        listView.setMaterialSettingsSections();
         listView.allowReorder(true);
         // Именно на списке, а не на адаптере: ItemTouchHelper создаётся и цепляется
         // только здесь, у адаптера одноимённый метод лишь запоминает колбэк.
