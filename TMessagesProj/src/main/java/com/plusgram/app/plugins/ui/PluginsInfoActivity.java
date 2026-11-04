@@ -51,6 +51,7 @@ public class PluginsInfoActivity extends BaseFragment {
     private static final int ID_DOCUMENTATION = 7;
     private static final int ID_TRUSTED = 8;
     private static final int ID_UNSAFE_MODE = 9;
+    private static final int ID_RETRY_HOOKS = 10;
 
     private static final String DOCS_URL = "https://plugins.exteragram.app";
     private static final String TRUSTED_URL = "https://t.me/addlist/pPhOtEq00KhjYTc6";
@@ -89,6 +90,10 @@ public class PluginsInfoActivity extends BaseFragment {
         boolean engineOn = controller.isEngineEnabled();
         boolean safeMode = controller.isSafeMode();
 
+        if (com.plusgram.app.plugins.xposed.XposedHooks.isNativeHooksBroken()) {
+            items.add(UItem.asButton(ID_RETRY_HOOKS, R.drawable.msg_retry, getString(R.string.PluginsRetryHooks)).red());
+            items.add(UItem.asShadow(getString(R.string.PluginsHooksBrokenInfo)));
+        }
         items.add(UItem.asHeader(getString(R.string.Settings)));
         items.add(PluginUiItem.check(ID_DEVELOPER_MODE,
                         getString(R.string.PluginsDeveloperMode),
@@ -164,6 +169,11 @@ public class PluginsInfoActivity extends BaseFragment {
                 confirmUnsafeMode();
                 return;
             }
+        } else if (item.id == ID_RETRY_HOOKS) {
+            com.plusgram.app.plugins.xposed.XposedHooks.resetNativeHooksBroken();
+            BulletinFactory.of(this)
+                    .createSimpleBulletin(R.raw.contact_check, getString(R.string.RestartRequired))
+                    .show();
         } else if (item.id == ID_INSTALL_FROM_FILE) {
             PluginsActivity.openPluginPicker(this);
             return;

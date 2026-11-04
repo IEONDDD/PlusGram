@@ -6,7 +6,7 @@
 Кастомный Android-клиент Telegram на базе exteraless / NagramX.
 
 [![Telegram Channel](https://img.shields.io/badge/Telegram-Канал%20с%20обновлениями-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/OPlusGram)
-[![GitHub Release](https://img.shields.io/badge/Release-v4.0.1-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
+[![GitHub Release](https://img.shields.io/badge/Release-v5.0.0-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
 </div>
 
 - **Telegram-канал (новости и обновления)**: https://t.me/OPlusGram
@@ -22,6 +22,10 @@
 Настройки → Plusgram → Внешний вид → Цвета Material You: как в системе, светлая, тёмная, AMOLED или возврат к прежней теме. Динамическая палитра доступна с Android 12, обновляется при изменении системных цветов существующим движком Monet.
 
 «Применить стиль Material You» включает восемь стилей Material 3, карточки со скруглением 24 dp и скруглённую плавающую кнопку. На Android 12+ также выбирается системная тема Monet. Отдельные стили, радиус карточек и темы можно затем изменить на этом же экране. На Android 7–11 доступны формы Material 3 без динамической палитры. Выключение цветов возвращает прежние темы, но не отменяет отдельно выбранные формы и элементы.
+
+## Plusgram 5.0.0
+
+Обновлена база до [exteraless 13.1.1 beta 15](https://github.com/exteraless/exteraless/releases/tag/v13.1.1-beta15). В обновлении доработаны плеер Material 3, запись кружков, уведомления и совместимость плагинов. В Plusgram включён Material You по умолчанию, а карточки настроек используют единый цвет активной темы.
 
 ## Plusgram 4.0.1
 
@@ -46,7 +50,7 @@ cd plusgram
 
 Скопируйте `local.properties.example` в `local.properties`. Укажите `sdk.dir`, свой `TELEGRAM_APP_ID` (только цифры) и `TELEGRAM_APP_HASH` (32 шестнадцатеричных символа), **без `<` и `>`**. Данные также читаются из переменных окружения. Публичные ключи Telegram больше не подставляются автоматически.
 
-Параметры текущего форка: JDK 21, Gradle Wrapper 9.7.1, Android SDK 37 и SDK 35 (для Media3), Build Tools 36.0.0, NDK 27.2.12479018, CMake 3.31.6+, Python 3.11. При необходимости задайте путь к Python в `CHAQUOPY_BUILD_PYTHON`.
+Параметры текущего форка: JDK 21, Gradle Wrapper 9.7.1, Android SDK 37, SDK 36 для Media3 и SDK 35 для JLaTeXMath, Build Tools 36.0.0, NDK 27.2.12479018, CMake 3.31.6+, Python 3.11. При необходимости задайте путь к Python в `CHAQUOPY_BUILD_PYTHON`.
 
 Сборка Chaquopy использует Bash-скрипт собственного runtime. Поддерживаются Linux / WSL2 и Windows с Git Bash. На Windows задайте путь к Python 3.11 в `CHAQUOPY_BUILD_PYTHON`. Оригинальный TGWS работает через встроенный Python runtime; для AES используется Android JCA.
 
