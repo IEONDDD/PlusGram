@@ -210,9 +210,11 @@ android {
         buildConfigField 'long', 'BUILD_TIMESTAMP', buildTimestamp + 'L'
         buildConfigField 'boolean', 'DEBUG_TOOLS', String.valueOf(project.findProperty('debugTools') == 'true')
         buildConfigField 'boolean', 'FIREBASE_ENABLED', String.valueOf(firebaseEnabled)
+        buildConfigField 'boolean', 'RUST_TEXT_ENABLED', String.valueOf(project.findProperty('rustTextEnabled') == 'true')
 
         externalNativeBuild {
             cmake {
+                arguments('-DPLUSGRAM_RUST_TEXT=' + (project.findProperty('rustTextEnabled') == 'true' ? 'ON' : 'OFF'))
                 arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-27', '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
                 System.getenv('PATH').split(File.pathSeparator).any { path ->
                     var file = Paths.get("${path}${File.separator}ccache${if (OperatingSystem.current().windows) ".exe" else ""}").toFile()

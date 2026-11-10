@@ -353,3 +353,8 @@ target_link_libraries(${NATIVE_LIB}
 
 #include(AndroidNdkModules)
 #android_ndk_import_module_cpufeatures()
+
+# Isolated Rust text pilot, separate from the wallet engine.
+if(PLUSGRAM_RUST_TEXT)
+    add_subdirectory(plusgram-text)
+endif()

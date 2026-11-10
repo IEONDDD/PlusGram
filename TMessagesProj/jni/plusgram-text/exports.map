@@ -1,0 +1,4 @@
+{
+  global: Java_com_plusgram_app_ai_network_ReasoningFilter_nativeProcess;
+  local: *;
+};

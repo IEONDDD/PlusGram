@@ -41,3 +41,6 @@ tests/local/
 chaquopy-build/
 .tgws-test-venv/
 build-plusgram*.log
+
+# Rust build output
+/rust/**/target/

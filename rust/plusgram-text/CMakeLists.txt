@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.16)
+# For desktop JVM parity tests; Android uses the application's CMake project.
+project(plusgram_text_host LANGUAGES CXX)
+find_package(JNI REQUIRED)
+add_library(plusgram_text_host SHARED ../../TMessagesProj/jni/plusgram-text/bridge.cpp)
+target_include_directories(plusgram_text_host PRIVATE ${JNI_INCLUDE_DIRS})
+target_link_libraries(plusgram_text_host PRIVATE "${RUST_ARCHIVE}")
+if(WIN32)
+    target_link_libraries(plusgram_text_host PRIVATE ws2_32 userenv bcrypt ntdll)
+endif()
