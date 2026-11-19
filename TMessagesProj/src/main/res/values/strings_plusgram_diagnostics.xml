@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramDiagnosticsTitle">Notifications and connection</string>
+    <string name="PlusgramDiagnosticsConnection">Telegram connection</string>
+    <string name="PlusgramDiagnosticsConnected">Connected</string>
+    <string name="PlusgramDiagnosticsUnknown">Unavailable</string>
+    <string name="PlusgramDiagnosticsDelivery">Push delivery</string>
+    <string name="PlusgramDiagnosticsRegistration">Push registration</string>
+    <string name="PlusgramDiagnosticsAndroid">Android settings</string>
+    <string name="PlusgramDiagnosticsPermission">Notification permission</string>
+    <string name="PlusgramDiagnosticsBackground">Background activity</string>
+    <string name="PlusgramDiagnosticsBlocked">Blocked</string>
+    <string name="PlusgramDiagnosticsAllowed">Allowed</string>
+    <string name="PlusgramDiagnosticsOptimized">Battery optimization is on</string>
+    <string name="PlusgramDiagnosticsExempt">Exempt from battery optimization</string>
+    <string name="PlusgramDiagnosticsRestricted">Restricted by Android</string>
+    <string name="PlusgramDiagnosticsRouting">Connection route</string>
+    <string name="PlusgramDiagnosticsOn">On</string>
+    <string name="PlusgramDiagnosticsOff">Off</string>
+    <string name="PlusgramDiagnosticsSignIn">Sign in to check registration</string>
+    <string name="PlusgramDiagnosticsInAppOn">In-app delivery · persistent connection enabled</string>
+    <string name="PlusgramDiagnosticsInAppOff">In-app delivery · persistent connection disabled</string>
+    <string name="PlusgramDiagnosticsNoFirebase">Firebase is missing from this build</string>
+    <string name="PlusgramDiagnosticsProviderUnavailable">Push provider unavailable</string>
+    <string name="PlusgramDiagnosticsRegistered">Registered with Telegram</string>
+    <string name="PlusgramDiagnosticsRegistering">Registering with Telegram…</string>
+    <string name="PlusgramDiagnosticsNotRegistered">Registration has not completed</string>
+    <string name="PlusgramDiagnosticsRegistrationFailed">Could not obtain a push token</string>
+    <string name="PlusgramDiagnosticsWaitingForPush">Waiting for a push token</string>
+    <string name="PlusgramDiagnosticsSettingsUnavailable">Android settings could not be opened</string>
+</resources>

@@ -76,7 +76,12 @@ def test_rename_into_settings_is_refused(gate):
 def test_symlink_to_settings_does_not_bypass(gate):
     gate.granted.add("files")
     link = gate.plugins / ".data" / "p" / "prefs"
-    os.symlink(gate.root / "shared_prefs", link)
+    try:
+        os.symlink(gate.root / "shared_prefs", link, target_is_directory=True)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink creation requires Developer Mode or elevated privileges")
+        raise
     with pytest.raises(PermissionError):
         check(gate, "open", str(link / "x.xml"), "w", os.O_WRONLY)
 

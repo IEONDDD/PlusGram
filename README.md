@@ -6,7 +6,7 @@
 Кастомный Android-клиент Telegram на базе exteraless / NagramX.
 
 [![Telegram Channel](https://img.shields.io/badge/Telegram-Канал%20с%20обновлениями-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/OPlusGram)
-[![GitHub Release](https://img.shields.io/badge/Release-v5.0.0-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
+[![GitHub Release](https://img.shields.io/badge/GitHub-Releases-blue?logo=github)](https://github.com/IEONDDD/PlusGram/releases)
 </div>
 
 - **Telegram-канал (новости и обновления)**: https://t.me/OPlusGram
@@ -22,6 +22,10 @@
 Настройки → Plusgram → Внешний вид → Цвета Material You: как в системе, светлая, тёмная, AMOLED или возврат к прежней теме. Динамическая палитра доступна с Android 12, обновляется при изменении системных цветов существующим движком Monet.
 
 «Применить стиль Material You» включает восемь стилей Material 3, карточки со скруглением 24 dp и скруглённую плавающую кнопку. На Android 12+ также выбирается системная тема Monet. Отдельные стили, радиус карточек и темы можно затем изменить на этом же экране. На Android 7–11 доступны формы Material 3 без динамической палитры. Выключение цветов возвращает прежние темы, но не отменяет отдельно выбранные формы и элементы.
+
+## Plusgram 5.0.1
+
+Откройте «Настройки → Plusgram → Уведомления и соединение» или одноимённый пункт в меню экрана входа. Здесь видны состояние связи с Telegram, выбранный push-провайдер, регистрация после входа, системные разрешения и состояние прокси. Строки с системными ограничениями открывают соответствующие настройки Android.
 
 ## Plusgram 5.0.0
 
@@ -74,7 +78,11 @@ Firebase включается только при наличии `TMessagesProj/
 
 Workflow `.github/workflows/release.yml` собирает APK на Ubuntu. Добавьте GitHub secrets `TELEGRAM_APP_ID` и `TELEGRAM_APP_HASH`, либо `LOCAL_PROPERTIES` (base64 содержимого properties). Для подписи — `RELEASE_KEYSTORE` (base64 keystore) и параметры подписи внутри `LOCAL_PROPERTIES`. Для Firebase можно добавить шаг восстановления собственной конфигурации до сборки.
 
-Сборка запускается вручную через Actions (`workflow_dispatch`). При выборе `publish=true` релиз также отправляется в Telegram (если заданы секреты `TG_BOT_TOKEN`, `TG_API_ID`, `TG_API_HASH`, `TG_CHAT_ID`).
+Сборка запускается вручную через Actions (`workflow_dispatch`). Release workflow включает Rust для ARM64 и x86‑64 и проверяет подпись, выравнивание и приватность APK. Для локальной сборки этой версии используйте [инструкцию по Rust](rust/plusgram-text/README.md) с `-PrustTextEnabled=true`. Gradle берёт версию 5.0.1 и код 8 из `gradle.properties`.
+
+Публикация с `publish=true` доступна из `main` после проверки сертификата 5.0.0 и обновления на эмуляторе Android 15. Укажите тег и имя файла подписанного APK 5.0.0 в полях `baseline_tag` и `baseline_asset`, если они отличаются от значений по умолчанию. Отправка в Telegram использует `TG_BOT_TOKEN`, `TG_API_ID`, `TG_API_HASH` и `TG_CHAT_ID`.
+
+Для проверки обновления локально запустите отдельный эмулятор Android 13+ с английским интерфейсом и выполните `python Tools/smoke_android_upgrade.py path/to/Plusgram-v5.0.0.apk path/to/candidate.apk`. Скрипт проверяет запуск, сохранение разрешения на уведомления после обновления и открытие диагностики и Material 3. Доставку в фоне можно проверить с тестовым аккаунтом. Выберите push-провайдер, сверьте статус регистрации на новом экране, сверните приложение и отправьте сообщение с другого аккаунта. Проверьте появление системного уведомления.
 
 ## Иконка
 

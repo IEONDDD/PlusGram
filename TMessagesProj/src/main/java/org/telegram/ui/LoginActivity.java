@@ -796,6 +796,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         moreButtonView = new ActionBarMenuItem(context, null, 0, Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         moreButtonView.setIcon(R.drawable.ic_ab_other);
         moreButtonView.addSubItem(0, R.drawable.msg_policy_solar, getString(R.string.Proxy));
+        moreButtonView.addSubItem(6, R.drawable.msg_notifications, getString(R.string.PlusgramDiagnosticsTitle));
         moreButtonView.addSubItem(5, R.drawable.msg_theme, getString(R.string.PlusgramMotionTitle));
         moreButtonView.addSubItem(1, R.drawable.msg_qrcode_solar, getString(R.string.ImportLogin));
         if (BuildVars.SUPPORTS_PASSKEYS) moreButtonView.addSubItem(4, R.drawable.menu_passkey_add, getString(R.string.PasskeyLogin));
@@ -804,6 +805,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         moreButtonView.setDelegate(id -> {
             if (id == 0) {
                 presentFragment(new ProxyListActivity());
+            } else if (id == 6) {
+                presentFragment(new com.plusgram.app.settings.ConnectionDiagnosticsActivity());
             } else if (id == 5) {
                 presentFragment(new com.plusgram.app.appearance.MaterialMotionActivity());
             } else if (id == 1) {

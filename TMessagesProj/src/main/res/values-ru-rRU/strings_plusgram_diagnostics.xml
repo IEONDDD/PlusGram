@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramDiagnosticsTitle">Уведомления и соединение</string>
+    <string name="PlusgramDiagnosticsConnection">Соединение с Telegram</string>
+    <string name="PlusgramDiagnosticsConnected">Подключено</string>
+    <string name="PlusgramDiagnosticsUnknown">Недоступно</string>
+    <string name="PlusgramDiagnosticsDelivery">Доставка уведомлений</string>
+    <string name="PlusgramDiagnosticsRegistration">Регистрация push</string>
+    <string name="PlusgramDiagnosticsAndroid">Настройки Android</string>
+    <string name="PlusgramDiagnosticsPermission">Разрешение на уведомления</string>
+    <string name="PlusgramDiagnosticsBackground">Работа в фоне</string>
+    <string name="PlusgramDiagnosticsBlocked">Запрещены</string>
+    <string name="PlusgramDiagnosticsAllowed">Разрешено</string>
+    <string name="PlusgramDiagnosticsOptimized">Оптимизация батареи включена</string>
+    <string name="PlusgramDiagnosticsExempt">Без оптимизации батареи</string>
+    <string name="PlusgramDiagnosticsRestricted">Ограничена системой Android</string>
+    <string name="PlusgramDiagnosticsRouting">Маршрут подключения</string>
+    <string name="PlusgramDiagnosticsOn">Включён</string>
+    <string name="PlusgramDiagnosticsOff">Выключен</string>
+    <string name="PlusgramDiagnosticsSignIn">Войди в аккаунт, чтобы проверить регистрацию</string>
+    <string name="PlusgramDiagnosticsInAppOn">Встроенная доставка · постоянное соединение включено</string>
+    <string name="PlusgramDiagnosticsInAppOff">Встроенная доставка · постоянное соединение выключено</string>
+    <string name="PlusgramDiagnosticsNoFirebase">В этой сборке нет конфигурации Firebase</string>
+    <string name="PlusgramDiagnosticsProviderUnavailable">Push-провайдер недоступен</string>
+    <string name="PlusgramDiagnosticsRegistered">Зарегистрировано в Telegram</string>
+    <string name="PlusgramDiagnosticsRegistering">Регистрация в Telegram…</string>
+    <string name="PlusgramDiagnosticsNotRegistered">Регистрация ещё не завершена</string>
+    <string name="PlusgramDiagnosticsRegistrationFailed">Не удалось получить push-токен</string>
+    <string name="PlusgramDiagnosticsWaitingForPush">Ожидание push-токена</string>
+    <string name="PlusgramDiagnosticsSettingsUnavailable">Не удалось открыть настройки Android</string>
+</resources>

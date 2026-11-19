@@ -7,6 +7,14 @@ on:
         description: 'Publish a GitHub pre-release and send APK to the configured Telegram channel'
         type: boolean
         default: false
+      baseline_tag:
+        description: 'GitHub release containing the signed Plusgram 5.0.0 APK'
+        type: string
+        default: v5.0.0
+      baseline_asset:
+        description: 'Asset name of the signed Plusgram 5.0.0 APK'
+        type: string
+        default: Plusgram-v5.0.0.apk
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,12 +34,14 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
       NATIVE_TARGET: "universal"
+      PUBLISH_RELEASE: ${{ inputs.publish }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
           submodules: recursive
+          persist-credentials: false
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -41,6 +51,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Set up Rust Android targets
+        run: |
+          rustup target add aarch64-linux-android x86_64-linux-android
+          cargo install cargo-ndk --version 4.1.2 --locked
       - name: Point Chaquopy at that Python
         run: echo "CHAQUOPY_BUILD_PYTHON=$(which python3.11 || which python)" >> $GITHUB_ENV
       - name: Set up Ccache
@@ -74,9 +88,16 @@ jobs:
         env:
           RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
         run: |
+          if [[ "$PUBLISH_RELEASE" == true && "$GITHUB_REF" != refs/heads/main ]]; then
+            echo "::error::Publishing requires the main branch."
+            exit 1
+          fi
           if [ -n "$RELEASE_KEYSTORE" ]; then
             echo "$RELEASE_KEYSTORE" | base64 -d > TMessagesProj/release.keystore
             echo "signing key restored"
+          elif [[ "$PUBLISH_RELEASE" == true ]]; then
+            echo "::error::Publishing requires RELEASE_KEYSTORE."
+            exit 1
           else
             echo "RELEASE_KEYSTORE не задан — сборка подпишется отладочным ключом"
           fi
@@ -90,13 +111,63 @@ jobs:
         run: |
           export BUILD_TIMESTAMP=$(date +%s)
           echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
-          ./gradlew TMessagesProj:assembleRelease
-      - name: Upload arm64-v8a Artifact
+          ./gradlew -PrustTextEnabled=true "-PrequireReleaseSigning=$PUBLISH_RELEASE" TMessagesProj:assembleRelease
+      - name: Verify release APK
+        run: |
+          shopt -s nullglob
+          apks=(TMessagesProj/build/outputs/apk/release/*.apk)
+          if [[ "${#apks[@]}" -ne 1 ]]; then
+            echo "::error::Expected one universal release APK."
+            exit 1
+          fi
+          apk="${apks[0]}"
+          echo "PLUSGRAM_APK=$apk" >> "$GITHUB_ENV"
+          tools="$ANDROID_HOME/build-tools/36.0.0"
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          signature=$("$tools/apksigner" verify --print-certs "$apk")
+          if [[ "$PUBLISH_RELEASE" == true ]]; then
+            expected='1837e4fedc2035971feba8a3ee04a744d894732522e8523745c4016dee64ddfa'
+            actual=$(awk '/^Signer #[0-9]+ certificate SHA-256 digest: / {print $NF}' <<< "$signature")
+            if [[ "$actual" != "$expected" ]]; then
+              echo "::error::APK must be signed by the production certificate used for Plusgram 5.0.0."
+              exit 1
+            fi
+          fi
+          for abi in arm64-v8a x86_64; do
+            unzip -t "$apk" "lib/$abi/libplusgram_text.so"
+          done
+          python Tools/check_release_privacy.py --apk "$apk" --report "$RUNNER_TEMP/plusgram-privacy.json"
+      - name: Download previous release APK
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASELINE_TAG: ${{ inputs.baseline_tag }}
+          BASELINE_ASSET: ${{ inputs.baseline_asset }}
+        run: |
+          gh release download --repo "$GITHUB_REPOSITORY" --pattern "$BASELINE_ASSET" \
+            --output "$RUNNER_TEMP/plusgram-5.0.0.apk" -- "$BASELINE_TAG"
+      - name: Enable KVM for Android smoke test
+        if: ${{ inputs.publish }}
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Check upgrade and diagnostics on Android
+        if: ${{ inputs.publish }}
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: python Tools/smoke_android_upgrade.py "$RUNNER_TEMP/plusgram-5.0.0.apk" "$PLUSGRAM_APK"
+      - name: Upload Release Artifact
         uses: actions/upload-artifact@v7
         with:
           name: Release
-          path: |
-            TMessagesProj/build/outputs/apk/release/*.apk
+          path: ${{ env.PLUSGRAM_APK }}
+          if-no-files-found: error
       - name: Publish GitHub pre-release
         if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.publish && !contains(github.event.head_commit.message, '[skip publish]') }}
         env:
@@ -108,7 +179,7 @@ jobs:
           if [ -z "$NOTES" ]; then
             NOTES="CI build $SHORT"
           fi
-          gh release create "$TAG" TMessagesProj/build/outputs/apk/release/*.apk \
+          gh release create "$TAG" "$PLUSGRAM_APK" \
             --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "Plusgram CI $SHORT" --notes "$NOTES"
           gh release list --limit 100 --json tagName,isPrerelease,createdAt \
@@ -117,7 +188,7 @@ jobs:
               gh release delete "$old" --yes --cleanup-tag
             done
       - name: Send APK to Telegram
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && !contains(github.event.head_commit.message, '[skip publish]') }}
+        if: ${{ github.ref == 'refs/heads/main' && inputs.publish && !contains(github.event.head_commit.message, '[skip publish]') }}
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_API_ID: ${{ secrets.TG_API_ID }}

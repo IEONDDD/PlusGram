@@ -33,6 +33,7 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
     private int generalRow;
     private int appearanceRow;
     private int chatsRow;
+    private int diagnosticsRow;
     private int tgwsRow;
     private int pluginsRow;
     private int otherRow;
@@ -54,6 +55,7 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
         generalRow = addRow("general");
         appearanceRow = addRow("appearance");
         chatsRow = addRow("chats");
+        diagnosticsRow = addRow("connectionDiagnostics", "PlusgramDiagnosticsTitle");
         tgwsRow = addRow("bypass");
         pluginsRow = addRow("plugins");
         otherRow = addRow("other");
@@ -171,6 +173,8 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
             presentFragment(new OpenExteraAppearanceActivity());
         } else if (position == chatsRow) {
             presentFragment(new OpenExteraChatsActivity());
+        } else if (position == diagnosticsRow) {
+            presentFragment(new ConnectionDiagnosticsActivity());
         } else if (position == tgwsRow) {
             presentFragment(new com.plusgram.app.proxy.tgws.TgwsSettingsActivity());
         } else if (position == pluginsRow) {
@@ -229,6 +233,8 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
                         cell.setTextAndIcon(getString(R.string.OpenExteraAppearance), R.drawable.msg_theme, true);
                     } else if (position == chatsRow) {
                         cell.setTextAndIcon(getString(R.string.OpenExteraChats), R.drawable.msg_discussion, true);
+                    } else if (position == diagnosticsRow) {
+                        cell.setTextAndIcon(getString(R.string.PlusgramDiagnosticsTitle), R.drawable.msg_notifications, true);
                     } else if (position == tgwsRow) {
                         cell.setTextAndValueAndIcon(getString(R.string.PlusgramTgwsTitle),
                                 com.plusgram.app.proxy.tgws.TgwsService.statusText(), R.drawable.msg_secret, true);

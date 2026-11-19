@@ -5,7 +5,9 @@ on:
     types: [opened, reopened, synchronize]
     paths-ignore:
       - '**.md'
-      - '**.xml'
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,6 +29,7 @@ jobs:
         with:
           fetch-depth: 1
           submodules: recursive
+          persist-credentials: false
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -38,6 +41,11 @@ jobs:
           python-version: '3.11'
       - name: Point Chaquopy at that Python
         run: echo "CHAQUOPY_BUILD_PYTHON=$(which python3.11 || which python)" >> $GITHUB_ENV
+      - name: Run repository tests
+        run: |
+          python -m pip install pytest PyYAML cryptography 'httpx[http2]==0.28.1'
+          python -X utf8 -m pytest tests -q -rs
+          cargo test --locked --manifest-path rust/plusgram-text/Cargo.toml
       - name: Set up Ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
@@ -47,7 +55,11 @@ jobs:
       - name: Set up Android SDK Tools
         uses: android-actions/setup-android@v4
         with:
-          packages: "build-tools;36.0.0 ndk;27.2.12479018 platforms;android-37.0 platforms;android-36 platforms;android-35"
+          packages: "build-tools;36.0.0 ndk;27.2.12479018 platforms;android-37.0 platforms;android-36 platforms;android-35 cmake;3.31.6"
+      - name: Install Native Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes nasm
       - name: Configure Android SDK Path
         run: |
           echo "sdk.dir=${ANDROID_HOME}" >> local.properties
@@ -62,17 +74,14 @@ jobs:
           fi
           cat gradle.properties
       - name: Debug Build
+        env:
+          TELEGRAM_APP_ID: '1'
+          TELEGRAM_APP_HASH: '00000000000000000000000000000000'
         run: |
-          export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
-          export DEBUG_BUILD=true
-          sed -i 's/signingConfig = signingConfigs.release//g' TMessagesProj/build.gradle
           ./gradlew TMessagesProj:assembleDebug
-
-          APK=$(find TMessagesProj/build/outputs/apk -name '*.apk' | head -1)
-          APK=$(dirname $APK)
-          echo "APK=$APK" >> $GITHUB_ENV
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Debug
-          path: ${{ env.APK }}
+          path: TMessagesProj/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

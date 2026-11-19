@@ -255,6 +255,9 @@ android {
     // local.properties; без него сборка подписывается отладочным ключом Android.
     def releaseKeystore = project.file('release.keystore')
     def hasReleaseKeystore = releaseKeystore.exists() && keystorePwd != null && alias != null
+    if (project.findProperty('requireReleaseSigning') == 'true' && (!hasReleaseKeystore || !pwd)) {
+        throw new GradleException('Publishing requires release.keystore and KEYSTORE_PASS, ALIAS_NAME and ALIAS_PASS.')
+    }
 
     signingConfigs {
         release {

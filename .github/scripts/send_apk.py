@@ -1,11 +1,9 @@
 import asyncio
-import glob
 import json
 import os
 
 from pyrogram import Client
 
-APK_GLOB = "TMessagesProj/build/outputs/apk/release/*.apk"
 CAPTION_LIMIT = 1024
 TITLE = "New CI Build!"
 
@@ -60,10 +58,9 @@ def caption():
 
 
 async def main() -> None:
-    apks = sorted(glob.glob(APK_GLOB), key=os.path.getmtime)
-    if not apks:
-        raise SystemExit(f"APK не найден: {APK_GLOB}")
-    apk = apks[-1]
+    apk = os.environ["PLUSGRAM_APK"]
+    if not os.path.isfile(apk):
+        raise SystemExit(f"Проверенный APK не найден: {apk}")
     print(f"{os.path.basename(apk)} — {os.path.getsize(apk) / 1024 / 1024:.1f} МБ")
 
     async with Client(
