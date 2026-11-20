@@ -777,14 +777,14 @@ object AppearanceConfig {
     }
 
     private fun migrateDecorations() {
-        val actionBar = NekoConfig.actionBarDecoration.Int()
-        val chat = NaConfig.chatDecoration.Int()
-        val snow = if (actionBar == 1 || chat == 1) 1 else 0
-        if (actionBar != snow) {
-            NekoConfig.actionBarDecoration.setConfigInt(snow)
-        }
-        if (chat != snow) {
-            NaConfig.chatDecoration.setConfigInt(snow)
+        val preferences = getPreferences()
+        val header = NekoConfig.actionBarDecoration
+        val chat = NaConfig.chatDecoration
+        // Carry over legacy snow only where a decoration was never explicitly selected.
+        if (header.Int() == 1 && !preferences.contains(chat.key)) {
+            chat.setConfigInt(1)
+        } else if (chat.Int() == 1 && !preferences.contains(header.key)) {
+            header.setConfigInt(1)
         }
     }
 

@@ -3,6 +3,7 @@
 - Redesigned Northern Lights with softly layered, slowly drifting curtains.
 - Reworked Rain and Thunderstorm with wind-driven streaks at different depths, cloud haze, and occasional branching lightning.
 - Preserved title readability and a still version of each effect when animations are disabled.
+- Fixed the selected header effect resetting when the app restarts.
 
 ## Plusgram 5.3.4
 
