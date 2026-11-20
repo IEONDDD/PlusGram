@@ -1,4 +1,10 @@
-# Plusgram 5.0.1
+# Plusgram 5.0.2
+
+- Restored the upstream TGWS WebSocket routes when the custom data center list is empty.
+- Added timeouts for TGWS startup and connection checks.
+- Fixed TGWS shutdown with active connections and aligned Python bootstrap assets with the installed Android ABI.
+
+## Plusgram 5.0.1
 
 - Added a Notifications and Connection screen to Plusgram settings and the sign-in menu. It shows Telegram connectivity, push registration, Android notification and battery settings, and proxy and Bypass status.
 - Designed the screen around a prominent connection card, rounded sections, and the active Material You palette in light and dark themes.

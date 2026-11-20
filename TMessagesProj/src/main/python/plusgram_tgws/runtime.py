@@ -115,7 +115,7 @@ async def _serve(data):
     cfg.fallback_cfproxy = bool(data.get("cloudflare", True))
     cfg.cfproxy_user_domains = [data["domain"]] if data["domain"] else []
     cfg.cfproxy_worker_domains = []
-    cfg.dc_redirects = data["redirects"]
+    cfg.dc_redirects = data["redirects"] or config.ProxyConfig().dc_redirects
     cfg.fake_tls_domain = data["sni"] if data.get("fake_tls") else ""
     cfg.disable_secure = cfg.proxy_protocol = cfg.force_test_dc = False
     core.reset_tcp_backoff()
@@ -152,10 +152,11 @@ async def _serve(data):
     finally:
         if server:
             server.close()
-            await server.wait_closed()
         for task in list(clients):
             task.cancel()
         await asyncio.gather(*clients, return_exceptions=True)
+        if server:
+            await server.wait_closed()
         await core.ws_pool.close()
         await core.cf_worker_pool.close()
         if core.cf_h2_pool is not None:

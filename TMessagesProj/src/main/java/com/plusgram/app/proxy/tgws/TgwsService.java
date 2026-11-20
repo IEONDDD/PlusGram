@@ -20,15 +20,21 @@ import static org.telegram.messenger.LocaleController.getString;
 /** A single, serialized Python runtime owned by a visible Android foreground service. */
 public final class TgwsService extends Service {
     private static final int NOTIFICATION = 14430;
+    private static final long START_TIMEOUT_MS = 30_000;
+    private static final long PING_TIMEOUT_MS = 15_000;
     private static final String CHANNEL = "plusgram_tgws";
     private static final String STOP = "com.plusgram.app.TGWS_STOP";
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     public static volatile String state = "off";
     public static volatile String error = "";
     public static volatile long ping = -1;
+    private static Runnable pingTimeout;
     private static boolean appStarted;
     private static boolean live;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable startTimeout = () -> {
+        if ("starting".equals(state)) fail("StartupTimeout");
+    };
     private boolean destroyed, ready, applied, paused, busy, internalChange;
     private int generation;
     private String pausedRoute;
@@ -44,6 +50,7 @@ public final class TgwsService extends Service {
             context.stopService(new Intent(context, TgwsService.class));
             restoreRoute();
             state = "off";
+            resetPing();
             return;
         }
         try {
@@ -134,12 +141,33 @@ public final class TgwsService extends Service {
 
     public static void checkPing() {
         if (!"running".equals(state)) return;
+        resetPing();
         ping = -2;
-        final String route = TgwsConfig.proxy().getLink();
+        final Runnable timeout = new Runnable() {
+            @Override public void run() {
+                if (pingTimeout == this) resetPing();
+            }
+        };
+        pingTimeout = timeout;
+        AndroidUtilities.runOnUIThread(timeout, PING_TIMEOUT_MS);
         ConnectionsManager.getInstance(UserConfig.selectedAccount).checkProxy(TgwsConfig.proxy(), time ->
                 AndroidUtilities.runOnUIThread(() -> {
-                    if ("running".equals(state) && route.equals(TgwsConfig.proxy().getLink())) ping = time;
+                    if (pingTimeout != timeout) return;
+                    resetPing();
+                    if ("running".equals(state)) ping = time;
                 }));
+    }
+
+    private static void resetPing() {
+        if (pingTimeout != null) AndroidUtilities.cancelRunOnUIThread(pingTimeout);
+        pingTimeout = null;
+        ping = -1;
+    }
+
+    private void setState(String next) {
+        state = next;
+        handler.removeCallbacks(startTimeout);
+        if ("starting".equals(next)) handler.postDelayed(startTimeout, START_TIMEOUT_MS);
     }
 
     @Override public void onCreate() {
@@ -149,11 +177,11 @@ public final class TgwsService extends Service {
             getSystemService(NotificationManager.class).createNotificationChannel(
                     new NotificationChannel(CHANNEL, "Plusgram TGWS Proxy", NotificationManager.IMPORTANCE_LOW));
         }
-        state = "starting";
+        setState("starting");
         startForeground(NOTIFICATION, notification());
         NotificationCenter.getGlobalInstance().addObserver(observer, NotificationCenter.proxySettingsChanged);
         PythonPluginsEngine.getInstance().ensureStarted(this, ok -> handler.post(() -> {
-            if (destroyed) return;
+            if (destroyed || !"starting".equals(state)) return;
             if (!ok) { fail("PythonStartup"); return; }
             ready = true;
             handler.post(tick);
@@ -226,8 +254,8 @@ public final class TgwsService extends Service {
         try { restoreRoute(); } finally { internalChange = false; }
         pausedRoute = ProxySettings.fromSharedPreferences(MessagesController.getGlobalMainSettings()).getLink();
         pausedRouteEnabled = MessagesController.getGlobalMainSettings().getBoolean("proxy_enabled", false);
-        state = forVpn ? "paused" : "starting";
-        ping = -1;
+        setState(forVpn ? "paused" : "starting");
+        resetPing();
         WORKER.execute(() -> {
             try { Python.getInstance().getModule("plusgram_tgws.runtime").callAttr("stop"); }
             catch (Exception e) { handler.post(() -> { if (!destroyed && token == generation) fail("Shutdown"); }); return; }
@@ -243,7 +271,7 @@ public final class TgwsService extends Service {
     private void startRuntime() {
         int token = ++generation;
         busy = true;
-        state = "starting";
+        setState("starting");
         String config = TgwsConfig.json().toString();
         String routeBeforeStart = ProxySettings.fromSharedPreferences(MessagesController.getGlobalMainSettings()).getLink();
         boolean routeEnabledBeforeStart = MessagesController.getGlobalMainSettings().getBoolean("proxy_enabled", false);
@@ -268,12 +296,12 @@ public final class TgwsService extends Service {
                         setEnabled(false);
                         return;
                     }
-                    state = "running";
+                    setState("running");
                     applyRoute();
                     updateNotification();
                     checkPing();
                 });
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 String reason = e instanceof IllegalStateException ? e.getMessage() : e.getClass().getSimpleName();
                 handler.post(() -> { if (!destroyed && token == generation) fail(reason); });
             }
@@ -281,8 +309,10 @@ public final class TgwsService extends Service {
     }
 
     private void fail(String reason) {
+        ++generation;
         error = reason;
-        state = "error";
+        setState("error");
+        resetPing();
         TgwsConfig.prefs().edit().putBoolean("enabled", false).apply();
         stopSelf();
     }
@@ -315,7 +345,7 @@ public final class TgwsService extends Service {
             }
         });
         if (!"error".equals(state)) state = "off";
-        ping = -1;
+        resetPing();
         stopForeground(true);
         super.onDestroy();
     }

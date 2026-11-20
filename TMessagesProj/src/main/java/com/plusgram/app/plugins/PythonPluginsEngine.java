@@ -14,6 +14,7 @@ import org.telegram.ui.Components.UItem;
 
 import com.plusgram.app.plugins.models.CustomSetting;
 
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,7 +123,16 @@ public class PythonPluginsEngine extends com.exteragram.messenger.plugins.Python
             try {
                 if (!Python.isStarted()) {
                     long t0 = System.currentTimeMillis();
-                    Python.start(new AndroidPlatform(appContext));
+                    AndroidPlatform platform = new AndroidPlatform(appContext);
+                    String nativeLibraryDir = appContext.getApplicationInfo().nativeLibraryDir;
+                    if (nativeLibraryDir != null) {
+                        // Match the ABI Android selected for the process, including overrides on emulators.
+                        switch (new File(nativeLibraryDir).getName()) {
+                            case "arm64": AndroidPlatform.ABI = "arm64-v8a"; break;
+                            case "x86_64": AndroidPlatform.ABI = "x86_64"; break;
+                        }
+                    }
+                    Python.start(platform);
                     FileLog.d("PluginsEngine: Python started in " + (System.currentTimeMillis() - t0) + " ms");
                 }
                 Python.getInstance().getModule("sys").callAttr("setswitchinterval", 0.001);

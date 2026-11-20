@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import socket
 import sys
+import threading
 import time
 
 import pytest
@@ -42,10 +43,17 @@ def test_valid_config():
 
 
 @pytest.fixture
-def engine():
+def engine(monkeypatch):
     pytest.importorskip("cryptography")
     pytest.importorskip("httpx")
     pytest.importorskip("h2")
+    from plusgram_tgws.vendor import tg_ws_proxy as core
+
+    async def skip_remote_warmup():
+        pass
+
+    monkeypatch.setattr(core.ws_pool, "warmup", skip_remote_warmup)
+    monkeypatch.setattr(core.cf_worker_pool, "warmup", skip_remote_warmup)
     yield runtime
     runtime.stop()
 
@@ -104,6 +112,43 @@ def test_immediate_stop_cancels_startup(engine):
         engine.start(config(port=free_port()))
         engine.stop()
         assert json.loads(engine.status())["state"] == "off"
+
+
+def test_stop_closes_active_loopback_client(engine, monkeypatch):
+    from plusgram_tgws.vendor import tg_ws_proxy as core
+
+    accepted = threading.Event()
+
+    async def hold_connection(reader, writer, secret):
+        try:
+            accepted.set()
+            await reader.read()
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    monkeypatch.setattr(core, "_handle_client", hold_connection)
+    port = free_port()
+    engine.start(config(port=port, cloudflare=False))
+    wait_state(engine, "running")
+    with socket.create_connection(("127.0.0.1", port), timeout=2) as client:
+        assert accepted.wait(2)
+        engine.stop()
+        assert client.recv(1) == b""
+
+
+def test_blank_dc_setting_restores_upstream_defaults(engine):
+    from plusgram_tgws.vendor.config import ProxyConfig, proxy_config
+
+    port = free_port()
+    engine.start(config(port=port, dc="3:192.0.2.3", cloudflare=False))
+    wait_state(engine, "running")
+    assert proxy_config.dc_redirects == {3: "192.0.2.3"}
+    engine.stop()
+
+    engine.start(config(port=port, cloudflare=False))
+    wait_state(engine, "running")
+    assert proxy_config.dc_redirects == ProxyConfig().dc_redirects
 
 
 def test_cloudflare_off_makes_no_domain_refresh(engine, monkeypatch):

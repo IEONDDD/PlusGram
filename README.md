@@ -78,7 +78,7 @@ Firebase включается только при наличии `TMessagesProj/
 
 Workflow `.github/workflows/release.yml` собирает APK на Ubuntu. Добавьте GitHub secrets `TELEGRAM_APP_ID` и `TELEGRAM_APP_HASH`, либо `LOCAL_PROPERTIES` (base64 содержимого properties). Для подписи — `RELEASE_KEYSTORE` (base64 keystore) и параметры подписи внутри `LOCAL_PROPERTIES`. Для Firebase можно добавить шаг восстановления собственной конфигурации до сборки.
 
-Сборка запускается вручную через Actions (`workflow_dispatch`). Release workflow включает Rust для ARM64 и x86‑64 и проверяет подпись, выравнивание и приватность APK. Для локальной сборки этой версии используйте [инструкцию по Rust](rust/plusgram-text/README.md) с `-PrustTextEnabled=true`. Gradle берёт версию 5.0.1 и код 8 из `gradle.properties`.
+Сборка запускается вручную через Actions (`workflow_dispatch`). Release workflow включает Rust для ARM64 и x86‑64 и проверяет подпись, выравнивание и приватность APK. Для локальной сборки используйте [инструкцию по Rust](rust/plusgram-text/README.md) с `-PrustTextEnabled=true`. Gradle берёт имя и код версии из `gradle.properties`.
 
 Публикация с `publish=true` доступна из `main` после проверки сертификата 5.0.0 и обновления на эмуляторе Android 15. Укажите тег и имя файла подписанного APK 5.0.0 в полях `baseline_tag` и `baseline_asset`, если они отличаются от значений по умолчанию. Отправка в Telegram использует `TG_BOT_TOKEN`, `TG_API_ID`, `TG_API_HASH` и `TG_CHAT_ID`.
 
