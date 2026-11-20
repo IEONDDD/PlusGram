@@ -1,4 +1,8 @@
-# Plusgram 5.0.2
+# Plusgram 5.0.3
+
+- В настройках Plusgram появился отдельный экран «Разработчики» со списком из семи ИИ-моделей.
+
+## Plusgram 5.0.2
 
 - Restored the upstream TGWS WebSocket routes when the custom data center list is empty.
 - Added timeouts for TGWS startup and connection checks.

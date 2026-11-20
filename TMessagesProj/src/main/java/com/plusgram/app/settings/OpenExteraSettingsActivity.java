@@ -37,6 +37,7 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
     private int tgwsRow;
     private int pluginsRow;
     private int otherRow;
+    private int developersRow;
     private int categoriesDividerRow;
 
     private int linksHeaderRow;
@@ -59,6 +60,7 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
         tgwsRow = addRow("bypass");
         pluginsRow = addRow("plugins");
         otherRow = addRow("other");
+        developersRow = addRow("PlusgramDevelopers");
         categoriesDividerRow = addRow();
 
         linksHeaderRow = addRow("linksHeader");
@@ -181,6 +183,8 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
             presentFragment(new com.plusgram.app.plugins.ui.PluginsActivity());
         } else if (position == otherRow) {
             presentFragment(new OpenExteraOtherActivity());
+        } else if (position == developersRow) {
+            presentFragment(new PlusgramDevelopersActivity());
         } else if (position == telegramChannelRow) {
             org.telegram.messenger.browser.Browser.openUrl(getParentActivity(),
                     "https://t.me/OPlusGram");
@@ -241,7 +245,9 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
                     } else if (position == pluginsRow) {
                         cell.setTextAndIcon(getString(R.string.OpenExteraPlugins), R.drawable.msg_plugins, true);
                     } else if (position == otherRow) {
-                        cell.setTextAndIcon(getString(R.string.OpenExteraOther), R.drawable.msg_fave, false);
+                        cell.setTextAndIcon(getString(R.string.OpenExteraOther), R.drawable.msg_fave, true);
+                    } else if (position == developersRow) {
+                        cell.setTextAndIcon(getString(R.string.PlusgramDevelopers), R.drawable.msg_info, false);
                     } else if (position == telegramChannelRow) {
                         cell.setTextAndValueAndIcon(getString(R.string.PlusgramChannel),
                                 "@OPlusGram", R.drawable.msg_channel, true);

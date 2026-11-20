@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="PlusgramDevelopers">Developers</string>
     <string name="PlusgramFeedback">Feedback and issues</string>
     <string name="PlusgramMaterialYou">Material You colors</string>
     <string name="PlusgramMaterialYouOff">Off / previous theme</string>
