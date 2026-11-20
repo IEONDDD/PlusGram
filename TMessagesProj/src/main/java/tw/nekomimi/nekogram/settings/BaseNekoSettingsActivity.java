@@ -118,7 +118,7 @@ public abstract class BaseNekoSettingsActivity extends BaseFragment {
     @Override
     public View createView(Context context) {
         fragmentView = new BlurContentView(context);
-        fragmentView.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(com.plusgram.app.appearance.MaterialExperience.background(getResourceProvider()));
         SizeNotifierFrameLayout frameLayout = (SizeNotifierFrameLayout) fragmentView;
 
         if (needActionBarBlur()) {

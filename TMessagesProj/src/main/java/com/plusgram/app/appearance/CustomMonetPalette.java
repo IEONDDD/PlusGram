@@ -51,7 +51,7 @@ public final class CustomMonetPalette {
                 return accentActive() ? accent(tone, 0.8f, 60f) : null;
             case "n1":
             case "n2":
-                return neutral(tone);
+                return BackgroundPalette.selected().colorAtTone(tone);
             default:
                 return null;
         }
@@ -69,20 +69,6 @@ public final class CustomMonetPalette {
             hue += 360.0;
         }
         return Hct.from(hue, chroma, tone).toInt();
-    }
-
-    private static Integer neutral(int tone) {
-        int mode = MaterialYouConfig.backgroundMode();
-        if (mode == MaterialYouConfig.BACKGROUND_SYSTEM) {
-            return null;
-        }
-        Hct seed = Hct.fromInt(MaterialYouConfig.accentColor());
-        double chroma = mode == MaterialYouConfig.BACKGROUND_GRAY ? 4.0 : 0.0;
-        int effectiveTone = tone;
-        if (mode == MaterialYouConfig.BACKGROUND_BLACK && tone <= 30) {
-            effectiveTone = 0;
-        }
-        return Hct.from(seed.getHue(), chroma, effectiveTone).toInt();
     }
 
     private static String paletteOf(String token) {

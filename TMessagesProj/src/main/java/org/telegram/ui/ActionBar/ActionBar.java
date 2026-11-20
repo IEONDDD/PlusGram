@@ -85,6 +85,7 @@ import me.vkryl.android.animator.FactorAnimator;
 import me.vkryl.android.animator.ReplaceAnimator;
 
 import com.plusgram.app.appearance.AppearanceConfig;
+import com.plusgram.app.appearance.HeaderWeatherEffect;
 import tw.nekomimi.nekogram.NekoConfig;
 import xyz.nextalone.nagram.NaConfig;
 
@@ -134,6 +135,7 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
 
     private boolean supportsHolidayImage;
     private SnowflakesEffect snowflakesEffect;
+    private HeaderWeatherEffect headerWeatherEffect;
     private FireworksEffect fireworksEffect;
     private Paint.FontMetricsInt fontMetricsInt;
     private boolean manualStart;
@@ -415,7 +417,8 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (supportsHolidayImage && !titleOverlayShown && !LocaleController.isRTL && ev.getAction() == MotionEvent.ACTION_DOWN) {
+        if (supportsHolidayImage && !HeaderWeatherEffect.isWeather(NekoConfig.actionBarDecoration.Int())
+                && !titleOverlayShown && !LocaleController.isRTL && ev.getAction() == MotionEvent.ACTION_DOWN) {
             Drawable drawable = Theme.getCurrentHolidayDrawable();
             if (drawable != null && drawable.getBounds().contains((int) ev.getX(), (int) ev.getY())) {
                 manualStart = true;
@@ -454,7 +457,8 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             canvas.clipRect(0, -getTranslationY() + (occupyStatusBar ? AndroidUtilities.statusBarHeight : 0), getMeasuredWidth(), getMeasuredHeight());
         }
         boolean result = super.drawChild(canvas, child, drawingTime);
-        if (supportsHolidayImage && !titleOverlayShown && !LocaleController.isRTL && (child == titleTextView[0] || child == titleTextView[1] || child == titlesContainer && useContainerForTitles)) {
+        if (supportsHolidayImage && !HeaderWeatherEffect.isWeather(NekoConfig.actionBarDecoration.Int())
+                && !titleOverlayShown && !LocaleController.isRTL && (child == titleTextView[0] || child == titleTextView[1] || child == titlesContainer && useContainerForTitles)) {
             Drawable drawable = Theme.getCurrentHolidayDrawable();
             if (drawable != null) {
                 SimpleTextView titleView = child == titlesContainer ? titleTextView[0] : (SimpleTextView) child;
@@ -2530,6 +2534,19 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             return;
         }
 
+        if (supportsHolidayImage) {
+            int effect = NekoConfig.actionBarDecoration.Int();
+            if (HeaderWeatherEffect.isWeather(effect)) {
+                if (!isSearchFieldVisible() && !titleOverlayShown && actionModeFactor == 0f) {
+                    if (headerWeatherEffect == null) headerWeatherEffect = new HeaderWeatherEffect();
+                    int top = occupyStatusBar ? AndroidUtilities.statusBarHeight : 0;
+                    headerWeatherEffect.draw(this, canvas, effect, top,
+                            Math.min(getHeight(), top + getCurrentActionBarHeight()), Theme.isCurrentThemeDark());
+                }
+            } else {
+                headerWeatherEffect = null;
+            }
+        }
         super.dispatchDraw(canvas);
     }
 

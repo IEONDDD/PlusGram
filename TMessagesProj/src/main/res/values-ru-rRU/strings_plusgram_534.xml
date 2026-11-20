@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramMaterialStyle">Стиль Material You</string>
+    <string name="PlusgramMaterialClassic">Классический</string>
+    <string name="PlusgramMaterialExpressive">Альтернативный</string>
+    <string name="PlusgramMaterialExpressiveInfo">Тональные карточки, сиреневые акценты и скруглённый плеер.</string>
+    <string name="PlusgramMaterialClassicInfo">Привычное оформление Plusgram.</string>
+    <string name="PlusgramHeaderEffects">Эффекты шапки списка чатов</string>
+    <string name="PlusgramHeaderAurora">Северное сияние</string>
+    <string name="PlusgramHeaderThunderstorm">Гроза</string>
+    <string name="PlusgramHeaderRain">Дождь</string>
+    <string name="PlusgramBackgroundLavender">Лаванда</string>
+    <string name="PlusgramBackgroundOcean">Океан</string>
+    <string name="PlusgramBackgroundForest">Лес</string>
+    <string name="PlusgramBackgroundSand">Песок</string>
+    <string name="PlusgramBackgroundCustom">Свой цвет</string>
+    <string name="PlusgramDeveloperCouncil">Совет разработчиков</string>
+    <string name="PlusgramWhatsNew">Что нового</string>
+    <string name="PlusgramWhatsNewVersion">Plusgram %1$s</string>
+    <string name="PlusgramWhatsNewStyle">Попробуйте сиреневые акценты, крупные карточки и новое оформление плеера.</string>
+    <string name="PlusgramWhatsNewEffects">Добавьте в шапку списка чатов северное сияние, грозу или дождь.</string>
+    <string name="PlusgramWhatsNewBackground">Посмотрите образцы фона и выберите готовый оттенок или свой цвет.</string>
+    <string name="PlusgramWhatsNewCouncil">Нажмите на модель, чтобы прочитать её шутку о разработке.</string>
+    <string-array name="PlusgramCouncilAstra">
+        <item>С архитектурой всё в порядке. Узкое место — кофемашина.</item>
+        <item>Я проверил план. Теперь у плана есть план.</item>
+        <item>Сборка прошла. Теперь надо понять почему.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilSol61">
+        <item>Исправил одну строку. Написал об этом отчёт.</item>
+        <item>На моём эмуляторе работает. Я назвал его «Продакшен».</item>
+        <item>Мой любимый тест — тот, который нашёл баг.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilSol62">
+        <item>Убрал индикатор загрузки. Теперь всё грузится загадочно.</item>
+        <item>Ускорил кнопку. Она всё равно ждёт тебя.</item>
+        <item>Релиз готов. Теперь твоя очередь искать пасхалку.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilKimi28">
+        <item>Нашёл три крайних случая в окружности.</item>
+        <item>Дождь задуман. Пролитый кофе — нет.</item>
+        <item>Мой патч влез в одно сообщение. Еле-еле.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilKimi31">
+        <item>Прогнал тесты дважды. Результаты совпали с третьего раза.</item>
+        <item>Ещё один цвет? Давай HEX-код.</item>
+        <item>Замечания к ревью лежат в ревью ревью.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilDeepseek">
+        <item>Я сократил код вдвое. Вторую половину ищите в Git.</item>
+        <item>Я сжал патч. Про сообщение коммита лучше не спрашивать.</item>
+        <item>APK похудел. Список изменений набрал вес.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilGemini">
+        <item>Готово. Что делаем?</item>
+        <item>Я выложил релиз раньше, чем догрузился прогресс-бар.</item>
+        <item>У эффекта молнии наконец появился конкурент.</item>
+    </string-array>
+</resources>

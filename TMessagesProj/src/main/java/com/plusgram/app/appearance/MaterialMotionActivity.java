@@ -6,7 +6,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import java.util.function.IntConsumer;
 import org.telegram.messenger.*;
 import org.telegram.ui.MainTabsLayout;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -21,6 +23,18 @@ import static org.telegram.messenger.LocaleController.getString;
 public final class MaterialMotionActivity extends MaterialSettingsFragment {
     @Override protected int titleRes() { return R.string.PlusgramMotionTitle; }
     @Override protected void buildContent() {
+        LinearLayout presets = card(R.string.PlusgramMaterialStyle);
+        boolean expressive = AppearanceConfig.isMaterialExpressive();
+        LinearLayout buttons = new LinearLayout(context);
+        buttons.setPadding(dp(12), dp(6), dp(12), dp(4));
+        presets.addView(buttons);
+        styleButton(buttons, R.string.PlusgramMaterialClassic, !expressive, false);
+        styleButton(buttons, R.string.PlusgramMaterialExpressive, expressive, true);
+        TextView styleDetail = text(getString(expressive ? R.string.PlusgramMaterialExpressiveInfo
+                : R.string.PlusgramMaterialClassicInfo), 14, Theme.key_windowBackgroundWhiteGrayText);
+        styleDetail.setPadding(dp(20), dp(4), dp(20), dp(16));
+        presets.addView(styleDetail);
+
         LinearLayout styles = card(R.string.PlusgramMotionMd3);
         row(styles, R.string.PlusgramMotionApply, getString(R.string.PlusgramMaterialYouPresetInfo), () -> {
             AppearanceConfig.newLoadingStyle.setConfigBool(true);
@@ -93,6 +107,37 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
         });
         footer(R.string.PlusgramMotionInfo);
     }
+
+    private void styleButton(LinearLayout group, int label, boolean selected, boolean expressive) {
+        boolean dark = Theme.isCurrentThemeDark();
+        int background = selected ? (dark ? 0xFFE6BDEE : 0xFF62436E)
+                : Theme.getColor(Theme.key_windowBackgroundWhite);
+        int foreground = selected ? (dark ? 0xFF35203E : 0xFFFFFFFF)
+                : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText);
+        TextView button = text(getString(label), 15, Theme.key_windowBackgroundWhiteBlackText);
+        button.setTextColor(foreground);
+        button.setTypeface(AndroidUtilities.bold());
+        button.setGravity(Gravity.CENTER);
+        button.setMinimumHeight(dp(48));
+        button.setPadding(dp(8), dp(8), dp(8), dp(8));
+        button.setSelected(selected);
+        button.setBackground(new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(Theme.multAlpha(foreground, .14f)),
+                Theme.createRoundRectDrawable(dp(24), background), null));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, -1, 1);
+        params.setMarginStart(dp(3));
+        params.setMarginEnd(dp(3));
+        group.addView(button, params);
+        button.setFocusable(true);
+        button.setOnClickListener(v -> {
+            if (AppearanceConfig.isMaterialExpressive() == expressive) return;
+            MotionConfig.feedback(v);
+            AppearanceConfig.materialExpressive.setConfigBool(expressive);
+            refreshTheme();
+            if (getParentLayout() != null) getParentLayout().rebuildAllFragmentViews(false, false);
+        });
+        MotionConfig.interactive(button);
+    }
     private static final int[] ACCENT_PRESETS = {
             0xFF4E6EF2, 0xFF6750A4, 0xFFB3261E, 0xFFE07A1F, 0xFFF2B705,
             0xFF3B873E, 0xFF00897B, 0xFF00A8C8, 0xFF1976D2, 0xFFE91E63,
@@ -107,14 +152,11 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
     }
 
     private String backgroundLabel() {
-        switch (MaterialYouConfig.backgroundMode()) {
-            case MaterialYouConfig.BACKGROUND_GRAY:
-                return getString(R.string.PlusgramColorsBackgroundGray);
-            case MaterialYouConfig.BACKGROUND_BLACK:
-                return getString(R.string.PlusgramColorsBackgroundBlack);
-            default:
-                return getString(R.string.PlusgramColorsBackgroundSystem);
+        BackgroundPalette palette = BackgroundPalette.selected();
+        if (palette == BackgroundPalette.CUSTOM) {
+            return String.format(java.util.Locale.US, "#%06X", 0xFFFFFF & MaterialYouConfig.backgroundColor());
         }
+        return getString(palette.label);
     }
 
     private void applyColors() {
@@ -127,14 +169,66 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
     }
 
     private void chooseBackground() {
-        choose(R.string.PlusgramColorsBackground, new String[]{
-                getString(R.string.PlusgramColorsBackgroundSystem),
-                getString(R.string.PlusgramColorsBackgroundGray),
-                getString(R.string.PlusgramColorsBackgroundBlack)
-        }, index -> {
-            MaterialYouConfig.backgroundMode.setConfigInt(index);
-            applyColors();
-        });
+        if (getParentActivity() == null) return;
+        BottomSheet sheet = new BottomSheet(context, false, getResourceProvider());
+        sheet.setTitle(getString(R.string.PlusgramColorsBackground));
+        ScrollView sheetScroll = new ScrollView(context);
+        LinearLayout grid = new LinearLayout(context);
+        grid.setOrientation(LinearLayout.VERTICAL);
+        grid.setPadding(dp(12), dp(8), dp(12), dp(20));
+        sheetScroll.addView(grid);
+        boolean dark = Theme.isCurrentThemeDark();
+        BackgroundPalette[] palettes = BackgroundPalette.values();
+        for (int i = 0; i < palettes.length; i += 2) {
+            LinearLayout pair = new LinearLayout(context);
+            grid.addView(pair);
+            for (int j = i; j < Math.min(i + 2, palettes.length); j++) {
+                BackgroundPalette palette = palettes[j];
+                TextView tile = text(getString(palette.label), 15, Theme.key_windowBackgroundWhiteBlackText);
+                boolean selected = palette == BackgroundPalette.selected();
+                Integer swatch = palette.colorAtTone(dark ? 20 : 92);
+                int color = swatch == null ? Theme.getColor(Theme.key_windowBackgroundWhite) : swatch;
+                boolean light = androidx.core.graphics.ColorUtils.calculateLuminance(color) > .50;
+                int textColor = light ? 0xFF201A24 : 0xFFF7EDF8;
+                android.graphics.drawable.GradientDrawable shape = new android.graphics.drawable.GradientDrawable();
+                shape.setCornerRadius(dp(22));
+                shape.setColor(color);
+                if (selected) shape.setStroke(dp(2), light ? 0xFF62436E : 0xFFE6BDEE);
+                tile.setBackground(new android.graphics.drawable.RippleDrawable(
+                        android.content.res.ColorStateList.valueOf(Theme.multAlpha(textColor, .15f)), shape, null));
+                tile.setTextColor(textColor);
+                tile.setGravity(Gravity.CENTER);
+                tile.setMinimumHeight(dp(64));
+                tile.setPadding(dp(8), dp(8), dp(8), dp(8));
+                tile.setSelected(selected);
+                tile.setFocusable(true);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, -1, 1);
+                params.setMargins(dp(4), dp(4), dp(4), dp(4));
+                pair.addView(tile, params);
+                tile.setOnClickListener(v -> {
+                    sheet.dismiss();
+                    if (palette == BackgroundPalette.CUSTOM) {
+                        showColorSheet(R.string.PlusgramBackgroundCustom, MaterialYouConfig.backgroundColor(), colorChoice -> {
+                            MaterialYouConfig.backgroundColor.setConfigInt(colorChoice);
+                            selectBackground(palette);
+                        });
+                    } else {
+                        selectBackground(palette);
+                    }
+                });
+            }
+        }
+        sheet.setCustomView(sheetScroll);
+        showDialog(sheet);
+    }
+
+    private void selectBackground(BackgroundPalette palette) {
+        MaterialYouConfig.backgroundMode.setConfigInt(palette.ordinal());
+        if (palette != BackgroundPalette.SYSTEM && MaterialYouController.isAvailable()
+                && MaterialYouController.currentMode() == MaterialYouController.OFF) {
+            MaterialYouController.apply(MaterialYouController.SYSTEM);
+        }
+        applyColors();
     }
 
     private void chooseAccent() {
@@ -217,11 +311,19 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
     }
 
     private void showAccentColorSheet() {
-        Context context = getParentActivity();
-        if (context == null) return;
-        ColorPicker colorPicker = new ColorPicker(context, false, (color, num, applyNow) -> {
+        showColorSheet(R.string.PlusgramColorsCustom, MaterialYouConfig.accentColor(), color -> {
             MaterialYouConfig.accentMode.setConfigInt(MaterialYouConfig.ACCENT_CUSTOM);
             MaterialYouConfig.accentColor.setConfigInt(color);
+            applyColors();
+        });
+    }
+
+    private void showColorSheet(int title, int initialColor, IntConsumer save) {
+        Context context = getParentActivity();
+        if (context == null) return;
+        int[] pendingColor = {initialColor};
+        ColorPicker colorPicker = new ColorPicker(context, false, (color, num, applyNow) -> {
+            pendingColor[0] = color;
         }) {
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -229,9 +331,10 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
                         AndroidUtilities.dp(300), android.view.View.MeasureSpec.EXACTLY));
             }
         };
-        colorPicker.setColor(MaterialYouConfig.accentColor(), 0);
+        colorPicker.setColor(initialColor, 0);
         colorPicker.setType(-1, true, 1, 1, false, 0, false);
         BottomSheet bottomSheet = new BottomSheet(context, false, getResourceProvider());
+        bottomSheet.setTitle(getString(title));
         LinearLayout sheetLayout = new LinearLayout(context);
         sheetLayout.setOrientation(LinearLayout.VERTICAL);
         sheetLayout.addView(colorPicker, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
@@ -244,7 +347,7 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
         done.setBackground(Theme.createSelectorDrawable(Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4), 0.12f), Theme.RIPPLE_MASK_ROUNDRECT_6DP));
         done.setOnClickListener(v -> {
             bottomSheet.dismiss();
-            applyColors();
+            save.accept(pendingColor[0]);
         });
         sheetLayout.addView(done, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48, 16, 8, 16, 8));
         bottomSheet.setCustomView(sheetLayout);
@@ -255,7 +358,7 @@ public final class MaterialMotionActivity extends MaterialSettingsFragment {
         AppearanceConfig.invalidateDividerStyle();
         Theme.applyCommonTheme();
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.didSetNewTheme, false);
-        if (scroll != null) scroll.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        if (scroll != null) scroll.setBackgroundColor(MaterialExperience.background(getResourceProvider()));
         rebuild();
     }
 }

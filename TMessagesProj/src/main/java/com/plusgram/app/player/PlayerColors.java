@@ -6,6 +6,8 @@ import android.os.Build;
 
 import androidx.core.graphics.ColorUtils;
 
+import com.plusgram.app.appearance.AppearanceConfig;
+
 import com.google.android.material.color.utilities.DynamicScheme;
 import com.google.android.material.color.utilities.Hct;
 import com.google.android.material.color.utilities.QuantizerCelebi;
@@ -59,6 +61,17 @@ public final class PlayerColors {
     }
 
     public static PlayerColors fromSeed(int seed, boolean dark) {
+        if (AppearanceConfig.isMaterialExpressive()) {
+            return new PlayerColors(dark, dark ? new int[]{
+                    0xFF131116, 0xFF1B181E, 0xFF242028, 0xFF302735,
+                    0xFFF0E8F1, 0xFFCEC2D1, 0xFF514653, 0xFFE6BDEE, 0xFF382041,
+                    0xFF503158, 0xFFFFDBFF, 0xFF392B43, 0xFFEFDCF6
+            } : new int[]{
+                    0xFFFFFBFF, 0xFFF7F0F8, 0xFFF1E8F3, 0xFFEADFED,
+                    0xFF231C26, 0xFF514654, 0xFFD3C3D4, 0xFF62436E, 0xFFFFFFFF,
+                    0xFFF1D5F5, 0xFF301638, 0xFFEEE0F2, 0xFF302238
+            });
+        }
         DynamicScheme s = new SchemeTonalSpot(Hct.fromInt(seed), dark, 0.0);
         return new PlayerColors(dark, new int[]{
                 s.getSurface(), s.getSurfaceContainerLow(), s.getSurfaceContainer(), s.getSurfaceContainerHigh(),

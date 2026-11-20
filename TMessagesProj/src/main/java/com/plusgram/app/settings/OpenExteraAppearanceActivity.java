@@ -36,6 +36,7 @@ import org.telegram.ui.MainTabsLayout;
 
 import com.plusgram.app.appearance.AppearanceConfig;
 import com.plusgram.app.appearance.MaterialYouController;
+import com.plusgram.app.appearance.HeaderWeatherEffect;
 import com.plusgram.app.appearance.AvatarCornersPreviewCell;
 import com.plusgram.app.appearance.AvatarCornersSeekBar;
 import com.plusgram.app.appearance.ChatListPreviewCell;
@@ -108,7 +109,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
     // Chat list
     private int chatListHeaderRow;
     private int chatListPreviewRow;
-    private int forceSnowRow;
+    private int headerEffectRow;
     private int centerTitleRow;
     // Material Design 3: сворачиваемая группа и пять вложенных стилей.
     private int md3GroupRow;
@@ -181,7 +182,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
 
         chatListHeaderRow = addRow("chatListHeader");
         chatListPreviewRow = addRow("chatListPreview");
-        forceSnowRow = addRow("forceSnow");
+        headerEffectRow = addRow("PlusgramHeaderEffects");
         centerTitleRow = addRow("centerTitle");
         senderMiniAvatarsRow = addRow("senderMiniAvatars");
         titleTextRow = addRow("titleText");
@@ -736,17 +737,16 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
             };
             showTitleTextSelector(onTitleTextChanged);
             return;
-        } else if (position == forceSnowRow) {
-            boolean enabled = NekoConfig.actionBarDecoration.Int() != 1;
-            NekoConfig.actionBarDecoration.setConfigInt(enabled ? 1 : 0);
-            NaConfig.INSTANCE.getChatDecoration().setConfigInt(enabled ? 1 : 0);
-            if (view instanceof TextCheckCell) {
-                ((TextCheckCell) view).setChecked(enabled);
-            }
-            rebuildAll();
-            if (enabled) {
-                showPowerSaverNotice();
-            }
+        } else if (position == headerEffectRow) {
+            if (getParentActivity() == null) return;
+            showDialog(new AlertDialog.Builder(getParentActivity(), getResourceProvider())
+                    .setTitle(getString(R.string.PlusgramHeaderEffects))
+                    .setItems(HeaderWeatherEffect.options(), (dialog, which) -> {
+                        NekoConfig.actionBarDecoration.setConfigInt(which);
+                        listAdapter.notifyItemChanged(position);
+                        rebuildAll();
+                        if (which == 1) showPowerSaverNotice();
+                    }).setNegativeButton(getString(R.string.Cancel), null).create());
             return;
         } else if (position == separateHeadersRow
                 && AppearanceConfig.sectionsSeparatedHeadersForced()) {
@@ -923,8 +923,6 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceDisableAvatarBlur), NaConfig.INSTANCE.getDisableAvatarBlur().Bool(), false);
                     } else if (position == singleCornerRadiusRow) {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceSingleCornerRadius), AppearanceConfig.singleCornerRadius.Bool(), false);
-                    } else if (position == forceSnowRow) {
-                        cell.setTextAndValueAndCheck(getString(R.string.OEAppearanceForceSnow), getString(R.string.OEAppearanceForceSnowInfo), NekoConfig.actionBarDecoration.Int() == 1, true, true);
                     } else if (position == senderMiniAvatarsRow) {
                         cell.setTextAndCheck(getString(R.string.OEAppearanceSenderMiniAvatars), AppearanceConfig.senderMiniAvatars.Bool(), false);
                     }
@@ -1012,6 +1010,8 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                         int titleText = clamp(AppearanceConfig.titleText.Int(), v.length);
                         cell.setTextAndValue(getString(R.string.OEAppearanceTitleText),
                                 titleText == AppearanceConfig.TITLE_TEXT_CUSTOM ? NaConfig.INSTANCE.getCustomTitle().String() : v[titleText], false);
+                    } else if (position == headerEffectRow) {
+                        cell.setTextAndValue(getString(R.string.PlusgramHeaderEffects), HeaderWeatherEffect.selectedLabel(), true);
                     }
                     break;
                 }
@@ -1123,7 +1123,7 @@ public class OpenExteraAppearanceActivity extends BaseNekoSettingsActivity {
                 return TYPE_ROUND_CHECK;
             } else if (position == dividerStyleRow
                     || position == tabTitleStyleRow
-                    || position == tabCounterRow || position == titleTextRow) {
+                    || position == tabCounterRow || position == titleTextRow || position == headerEffectRow) {
                 return TYPE_SETTINGS;
             }
             return TYPE_CHECK;

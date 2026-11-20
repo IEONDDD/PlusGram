@@ -1,4 +1,12 @@
-# Plusgram 5.0.3
+# Plusgram 5.3.4
+
+- Added an optional Expressive Material You style with lilac accents, rounded cards, and a restyled player. Classic remains the default.
+- Added Northern Lights, Thunderstorm, and Rain to the chat list header effects.
+- Redesigned the background picker with color previews, additional presets, and a custom color editor.
+- Added What's New on first launch after updating and in Plusgram settings.
+- Turned the Developers screen into the Developer Council. Tap any of the seven models for a local joke.
+
+## Plusgram 5.0.3
 
 - В настройках Plusgram появился отдельный экран «Разработчики» со списком из семи ИИ-моделей.
 

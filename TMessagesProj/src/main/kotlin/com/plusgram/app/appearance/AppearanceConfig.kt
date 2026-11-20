@@ -89,6 +89,16 @@ object AppearanceConfig {
     val monetStyle =
         addConfig("OEAppearanceMonetStyle", ConfigItem.configTypeInt, MONET_STYLE_TELEMONE)
 
+    @JvmField
+    val materialExpressive =
+        addConfig("OEAppearanceMaterialExpressive", ConfigItem.configTypeBool, false)
+
+    @JvmStatic
+    fun isMaterialExpressive(): Boolean {
+        ensureLoaded()
+        return materialExpressive.Bool()
+    }
+
     /** Суффикс файла темы для выбранного набора: пустой для Telemone. */
     @JvmStatic
     fun monetAssetSuffix(): String = when (monetStyle.Int()) {

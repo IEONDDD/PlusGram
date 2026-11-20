@@ -32,7 +32,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
     }
     @Override public void didReceivedNotification(int id, int account, Object... args) {
         if (scroll != null) {
-            scroll.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+            scroll.setBackgroundColor(MaterialExperience.background(getResourceProvider()));
             rebuild();
         }
     }
@@ -47,7 +47,7 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
         scroll = new ScrollView(context);
         scroll.setFillViewport(true);
         scroll.setClipToPadding(false);
-        scroll.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        scroll.setBackgroundColor(MaterialExperience.background(getResourceProvider()));
         content = new LinearLayout(context) {
             @Override protected void onMeasure(int width, int height) {
                 super.onMeasure(MeasureSpec.makeMeasureSpec(Math.min(MeasureSpec.getSize(width), dp(720)),
@@ -77,7 +77,8 @@ public abstract class MaterialSettingsFragment extends BaseFragment implements N
         LinearLayout card = new LinearLayout(context);
         card.setOrientation(LinearLayout.VERTICAL);
         int radius = AppearanceConfig.sectionRadius();
-        card.setBackground(Theme.createRoundRectDrawable(dp(Math.max(8, radius)), MaterialExperience.surface(null)));
+        int minRadius = AppearanceConfig.isMaterialExpressive() ? 32 : 8;
+        card.setBackground(Theme.createRoundRectDrawable(dp(Math.max(minRadius, radius)), MaterialExperience.surface(getResourceProvider())));
         card.setClipToOutline(true);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
         params.bottomMargin = dp(16);

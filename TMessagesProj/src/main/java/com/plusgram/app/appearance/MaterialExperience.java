@@ -42,7 +42,28 @@ public final class MaterialExperience {
     public static int surface(Theme.ResourcesProvider provider) {
         boolean dark = provider != null ? provider.isDark() : Theme.isCurrentThemeDark();
         int surface = Theme.getColor(Theme.key_windowBackgroundWhite, provider);
+        if (MaterialYouConfig.customBackground()) {
+            if (MaterialYouController.isAvailable()) return surface;
+            Integer custom = BackgroundPalette.selected().colorAtTone(dark ? 16 : 94);
+            if (custom != null) return custom;
+        }
+        if (AppearanceConfig.isMaterialExpressive()) {
+            return ColorUtils.blendARGB(surface, dark ? 0xFF211D25 : 0xFFF2EBF7, .75f);
+        }
         int accent = Theme.getColor(Theme.key_windowBackgroundWhiteBlueText, provider);
         return ColorUtils.setAlphaComponent(ColorUtils.blendARGB(surface, accent, dark ? .08f : .035f), 255);
+    }
+
+    public static int background(Theme.ResourcesProvider provider) {
+        int background = Theme.getColor(Theme.key_windowBackgroundGray, provider);
+        if (MaterialYouConfig.customBackground()) {
+            if (MaterialYouController.isAvailable()) return background;
+            boolean dark = provider != null ? provider.isDark() : Theme.isCurrentThemeDark();
+            Integer custom = BackgroundPalette.selected().colorAtTone(dark ? 10 : 98);
+            if (custom != null) return custom;
+        }
+        if (!AppearanceConfig.isMaterialExpressive()) return background;
+        boolean dark = provider != null ? provider.isDark() : Theme.isCurrentThemeDark();
+        return ColorUtils.blendARGB(background, dark ? 0xFF121014 : 0xFFFFFBFF, .85f);
     }
 }

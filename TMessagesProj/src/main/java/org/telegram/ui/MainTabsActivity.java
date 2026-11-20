@@ -1091,6 +1091,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public void onBecomeFullyVisible() {
         super.onBecomeFullyVisible();
+        com.plusgram.app.settings.PlusgramWhatsNewActivity.showOnce(this);
         final BaseFragment fragment = getCurrentVisibleFragment();
         if (fragment instanceof TabFragmentDelegate) {
             ((TabFragmentDelegate) fragment).onParentBecomeFullyVisible();

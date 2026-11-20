@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.core.graphics.ColorUtils;
 
+import com.plusgram.app.appearance.AppearanceConfig;
+
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.MediaController;
@@ -42,7 +44,14 @@ public class PlayerBarView extends FrameLayout implements NotificationCenter.Not
         super(context);
         PlayerColors theme = PlayerColors.fromSeed(PlayerColors.fallbackSeed(resourcesProvider), PlayerColors.isDark(resourcesProvider));
 
-        setBackground(Theme.getSelectorDrawable(false));
+        boolean expressive = AppearanceConfig.isMaterialExpressive();
+        if (expressive) {
+            setBackground(new android.graphics.drawable.RippleDrawable(
+                    android.content.res.ColorStateList.valueOf(theme.ripple()),
+                    Theme.createRoundRectDrawable(dp(24), theme.surfaceContainer), null));
+        } else {
+            setBackground(Theme.getSelectorDrawable(false));
+        }
         setOnClickListener(v -> onOpen.run());
         setContentDescription(getString(R.string.OEPlayerOpen));
 
@@ -95,18 +104,25 @@ public class PlayerBarView extends FrameLayout implements NotificationCenter.Not
         buttons.addView(closeButton, LayoutHelper.createLinear(40, 40));
         addView(buttons, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 40, Gravity.RIGHT | Gravity.CENTER_VERTICAL, 0, 0, 6, 0));
 
-        int text = Theme.getColor(Theme.key_inappPlayerPerformer, resourcesProvider);
-        int secondary = Theme.getColor(Theme.key_inappPlayerTitle, resourcesProvider);
-        int icons = Theme.getColor(Theme.key_inappPlayerClose, resourcesProvider);
+        int text = expressive ? theme.onSurface : Theme.getColor(Theme.key_inappPlayerPerformer, resourcesProvider);
+        int secondary = expressive ? theme.onSurfaceVariant : Theme.getColor(Theme.key_inappPlayerTitle, resourcesProvider);
+        int icons = expressive ? theme.onSurface : Theme.getColor(Theme.key_inappPlayerClose, resourcesProvider);
         titleView.setTextColor(text);
         artistView.setTextColor(ColorUtils.setAlphaComponent(secondary, 0xbf));
         nextIcon.setColor(icons);
         closeIcon.setColor(icons);
         int ripple = icons & 0x19ffffff;
-        nextButton.setBackground(Theme.createSelectorDrawable(ripple, Theme.RIPPLE_MASK_CIRCLE_20DP));
+        if (expressive) {
+            nextIcon.setColor(theme.onSecondaryContainer);
+            nextButton.setBackground(new android.graphics.drawable.RippleDrawable(
+                    android.content.res.ColorStateList.valueOf(theme.ripple()),
+                    Theme.createRoundRectDrawable(dp(20), theme.secondaryContainer), null));
+        } else {
+            nextButton.setBackground(Theme.createSelectorDrawable(ripple, Theme.RIPPLE_MASK_CIRCLE_20DP));
+        }
         closeButton.setBackground(Theme.createSelectorDrawable(ripple, Theme.RIPPLE_MASK_CIRCLE_20DP));
         playButton.setBackground(Theme.createSelectorDrawable(ripple, Theme.RIPPLE_MASK_CIRCLE_20DP));
-        int accent = Theme.getColor(Theme.key_inappPlayerPlayPause, resourcesProvider);
+        int accent = expressive ? theme.primary : Theme.getColor(Theme.key_inappPlayerPlayPause, resourcesProvider);
         playButton.setColors(accent, ColorUtils.setAlphaComponent(accent, 51), accent);
         cover.setColors(theme.primaryContainer, theme.onPrimaryContainer);
     }

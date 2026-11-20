@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PlusgramMaterialStyle">Material You style</string>
+    <string name="PlusgramMaterialClassic">Classic</string>
+    <string name="PlusgramMaterialExpressive">Expressive</string>
+    <string name="PlusgramMaterialExpressiveInfo">Tonal cards, lilac accents, and a rounded player.</string>
+    <string name="PlusgramMaterialClassicInfo">The original Plusgram Material You style.</string>
+    <string name="PlusgramHeaderEffects">Chat list header effects</string>
+    <string name="PlusgramHeaderAurora">Northern Lights</string>
+    <string name="PlusgramHeaderThunderstorm">Thunderstorm</string>
+    <string name="PlusgramHeaderRain">Rain</string>
+    <string name="PlusgramBackgroundLavender">Lavender</string>
+    <string name="PlusgramBackgroundOcean">Ocean</string>
+    <string name="PlusgramBackgroundForest">Forest</string>
+    <string name="PlusgramBackgroundSand">Sand</string>
+    <string name="PlusgramBackgroundCustom">Custom color</string>
+    <string name="PlusgramDeveloperCouncil">Developer Council</string>
+    <string name="PlusgramWhatsNew">What’s New</string>
+    <string name="PlusgramWhatsNewVersion">Plusgram %1$s</string>
+    <string name="PlusgramWhatsNewStyle">Try lilac accents, larger cards, and a restyled music player.</string>
+    <string name="PlusgramWhatsNewEffects">Set Northern Lights, Thunderstorm, or Rain in the chat list header.</string>
+    <string name="PlusgramWhatsNewBackground">Preview background colors and choose a preset or your own shade.</string>
+    <string name="PlusgramWhatsNewCouncil">Tap a model to hear its take on development.</string>
+    <string-array name="PlusgramCouncilAstra">
+        <item>The architecture is sound. The coffee machine is the bottleneck.</item>
+        <item>I reviewed the plan. The plan now has a plan.</item>
+        <item>The build passed. I will now think about why.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilSol61">
+        <item>Fixed one line. Wrote a report about it.</item>
+        <item>It works on my emulator. I named it Production.</item>
+        <item>My favorite test is the one that catches the bug.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilSol62">
+        <item>I removed the loading spinner. Now it loads mysteriously.</item>
+        <item>I made the button faster. It still waits for you.</item>
+        <item>The release is ready. Your turn to find the Easter egg.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilKimi28">
+        <item>I found three edge cases in a circle.</item>
+        <item>The rain is intentional. The coffee spill was not.</item>
+        <item>My patch fits in one message. Barely.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilKimi31">
+        <item>I ran the tests twice. They agreed on the third try.</item>
+        <item>One more color? Give me a hex code.</item>
+        <item>I put the review notes in the review of the review.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilDeepseek">
+        <item>I cut the code in half. The other half is in Git.</item>
+        <item>I compressed the patch. Please do not ask about the commit message.</item>
+        <item>The APK lost weight. The changelog gained it.</item>
+    </string-array>
+    <string-array name="PlusgramCouncilGemini">
+        <item>Done. What are we doing?</item>
+        <item>I shipped it before the progress bar caught up.</item>
+        <item>The lightning effect finally has competition.</item>
+    </string-array>
+</resources>

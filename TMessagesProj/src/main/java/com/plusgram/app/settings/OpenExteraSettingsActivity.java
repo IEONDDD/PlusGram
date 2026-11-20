@@ -38,6 +38,7 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
     private int pluginsRow;
     private int otherRow;
     private int developersRow;
+    private int whatsNewRow;
     private int categoriesDividerRow;
 
     private int linksHeaderRow;
@@ -60,7 +61,8 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
         tgwsRow = addRow("bypass");
         pluginsRow = addRow("plugins");
         otherRow = addRow("other");
-        developersRow = addRow("PlusgramDevelopers");
+        developersRow = addRow("PlusgramDeveloperCouncil");
+        whatsNewRow = addRow("PlusgramWhatsNew");
         categoriesDividerRow = addRow();
 
         linksHeaderRow = addRow("linksHeader");
@@ -185,6 +187,8 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
             presentFragment(new OpenExteraOtherActivity());
         } else if (position == developersRow) {
             presentFragment(new PlusgramDevelopersActivity());
+        } else if (position == whatsNewRow) {
+            presentFragment(new PlusgramWhatsNewActivity());
         } else if (position == telegramChannelRow) {
             org.telegram.messenger.browser.Browser.openUrl(getParentActivity(),
                     "https://t.me/OPlusGram");
@@ -247,7 +251,9 @@ public class OpenExteraSettingsActivity extends BaseNekoSettingsActivity {
                     } else if (position == otherRow) {
                         cell.setTextAndIcon(getString(R.string.OpenExteraOther), R.drawable.msg_fave, true);
                     } else if (position == developersRow) {
-                        cell.setTextAndIcon(getString(R.string.PlusgramDevelopers), R.drawable.msg_info, false);
+                        cell.setTextAndIcon(getString(R.string.PlusgramDeveloperCouncil), R.drawable.msg_info, true);
+                    } else if (position == whatsNewRow) {
+                        cell.setTextAndIcon(getString(R.string.PlusgramWhatsNew), R.drawable.msg_help, false);
                     } else if (position == telegramChannelRow) {
                         cell.setTextAndValueAndIcon(getString(R.string.PlusgramChannel),
                                 "@OPlusGram", R.drawable.msg_channel, true);

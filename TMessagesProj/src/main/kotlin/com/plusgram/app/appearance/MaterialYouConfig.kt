@@ -43,6 +43,9 @@ object MaterialYouConfig {
     @JvmField
     val backgroundMode = addConfig("PlusgramColorBackgroundMode", ConfigItem.configTypeInt, BACKGROUND_SYSTEM)
 
+    @JvmField
+    val backgroundColor = addConfig("PlusgramColorBackgroundColor", ConfigItem.configTypeInt, 0xFF9579A6.toInt())
+
     @JvmStatic
     fun getConfigTypes(): Map<String, Int> = configs.associate { it.key to it.type }
 
@@ -65,6 +68,12 @@ object MaterialYouConfig {
     fun backgroundMode(): Int {
         ensureLoaded()
         return backgroundMode.Int()
+    }
+
+    @JvmStatic
+    fun backgroundColor(): Int {
+        ensureLoaded()
+        return backgroundColor.Int()
     }
 
     @JvmStatic

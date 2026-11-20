@@ -200,12 +200,8 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
             getString(R.string.StyleModern),
             getString(R.string.StyleMaterialDesign3)
     }, null));
-    private final AbstractConfigCell actionBarDecorationRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NekoConfig.actionBarDecoration, new String[]{
-            getString(R.string.DependsOnDate),
-            getString(R.string.Snowflakes),
-            getString(R.string.Fireworks),
-            getString(R.string.DecorationNone),
-    }, null));
+    private final AbstractConfigCell actionBarDecorationRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NekoConfig.actionBarDecoration,
+            com.plusgram.app.appearance.HeaderWeatherEffect.options(), null));
     private final AbstractConfigCell chatDecorationRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getChatDecoration(), new String[]{
             getString(R.string.DependsOnDate),
             getString(R.string.Snowflakes),
