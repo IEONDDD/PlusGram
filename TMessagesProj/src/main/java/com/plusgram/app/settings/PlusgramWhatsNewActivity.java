@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.plusgram.app.appearance.MaterialMotionActivity;
 import com.plusgram.app.appearance.MaterialSettingsFragment;
 
 import org.telegram.messenger.BuildVars;
@@ -45,12 +44,7 @@ public final class PlusgramWhatsNewActivity extends MaterialSettingsFragment {
         heading.setTypeface(AndroidUtilities.bold());
         heading.setPadding(dp(20), dp(20), dp(20), dp(6));
         changes.addView(heading);
-        row(changes, R.string.PlusgramMaterialExpressive, getString(R.string.PlusgramWhatsNewStyle),
-                () -> presentFragment(new MaterialMotionActivity()));
-        row(changes, R.string.PlusgramHeaderEffects, getString(R.string.PlusgramWhatsNewEffects),
+        row(changes, R.string.PlusgramHeaderEffects, getString(R.string.PlusgramWhatsNewWeather),
                 () -> presentFragment(new OpenExteraAppearanceActivity()));
-        row(changes, R.string.PlusgramColorsBackground, getString(R.string.PlusgramWhatsNewBackground), null);
-        row(changes, R.string.PlusgramDeveloperCouncil, getString(R.string.PlusgramWhatsNewCouncil),
-                () -> presentFragment(new PlusgramDevelopersActivity()));
     }
 }

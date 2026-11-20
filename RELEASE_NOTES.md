@@ -1,4 +1,10 @@
-# Plusgram 5.3.4
+# Plusgram 5.3.5
+
+- Redesigned Northern Lights with softly layered, slowly drifting curtains.
+- Reworked Rain and Thunderstorm with wind-driven streaks at different depths, cloud haze, and occasional branching lightning.
+- Preserved title readability and a still version of each effect when animations are disabled.
+
+## Plusgram 5.3.4
 
 - Added an optional Expressive Material You style with lilac accents, rounded cards, and a restyled player. Classic remains the default.
 - Added Northern Lights, Thunderstorm, and Rain to the chat list header effects.

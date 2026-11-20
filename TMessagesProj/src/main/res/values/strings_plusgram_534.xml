@@ -17,10 +17,7 @@
     <string name="PlusgramDeveloperCouncil">Developer Council</string>
     <string name="PlusgramWhatsNew">What’s New</string>
     <string name="PlusgramWhatsNewVersion">Plusgram %1$s</string>
-    <string name="PlusgramWhatsNewStyle">Try lilac accents, larger cards, and a restyled music player.</string>
-    <string name="PlusgramWhatsNewEffects">Set Northern Lights, Thunderstorm, or Rain in the chat list header.</string>
-    <string name="PlusgramWhatsNewBackground">Preview background colors and choose a preset or your own shade.</string>
-    <string name="PlusgramWhatsNewCouncil">Tap a model to hear its take on development.</string>
+    <string name="PlusgramWhatsNewWeather">Northern Lights now drift in layers. Rain falls at different depths, and Thunderstorm brings cloud haze and brief, branching lightning. Tap to change the header effect.</string>
     <string-array name="PlusgramCouncilAstra">
         <item>The architecture is sound. The coffee machine is the bottleneck.</item>
         <item>I reviewed the plan. The plan now has a plan.</item>

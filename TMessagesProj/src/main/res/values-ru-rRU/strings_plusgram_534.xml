@@ -17,10 +17,7 @@
     <string name="PlusgramDeveloperCouncil">Совет разработчиков</string>
     <string name="PlusgramWhatsNew">Что нового</string>
     <string name="PlusgramWhatsNewVersion">Plusgram %1$s</string>
-    <string name="PlusgramWhatsNewStyle">Попробуйте сиреневые акценты, крупные карточки и новое оформление плеера.</string>
-    <string name="PlusgramWhatsNewEffects">Добавьте в шапку списка чатов северное сияние, грозу или дождь.</string>
-    <string name="PlusgramWhatsNewBackground">Посмотрите образцы фона и выберите готовый оттенок или свой цвет.</string>
-    <string name="PlusgramWhatsNewCouncil">Нажмите на модель, чтобы прочитать её шутку о разработке.</string>
+    <string name="PlusgramWhatsNewWeather">Северное сияние переливается в несколько слоёв. Капли дождя падают с разной скоростью, а в грозе появились облачная дымка и короткие ветвящиеся молнии. Нажмите, чтобы выбрать эффект шапки.</string>
     <string-array name="PlusgramCouncilAstra">
         <item>С архитектурой всё в порядке. Узкое место — кофемашина.</item>
         <item>Я проверил план. Теперь у плана есть план.</item>
