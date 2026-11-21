@@ -17,7 +17,7 @@
     <string name="PlusgramDeveloperCouncil">Совет разработчиков</string>
     <string name="PlusgramWhatsNew">Что нового</string>
     <string name="PlusgramWhatsNewVersion">Plusgram %1$s</string>
-    <string name="PlusgramWhatsNewWeather">Северное сияние переливается в несколько слоёв. Капли дождя падают с разной скоростью, а в грозе появились облачная дымка и короткие ветвящиеся молнии. Нажмите, чтобы выбрать эффект шапки.</string>
+    <string name="PlusgramWhatsNewWeather">Дождь и гроза теперь плавно затухают по краям шапки списка чатов в светлых и тёмных темах. Нажмите, чтобы выбрать эффект шапки.</string>
     <string-array name="PlusgramCouncilAstra">
         <item>С архитектурой всё в порядке. Узкое место — кофемашина.</item>
         <item>Я проверил план. Теперь у плана есть план.</item>

@@ -76,7 +76,6 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
 
     public static ApplicationLoader applicationLoaderInstance;
 
-    private static PendingIntent pendingIntent;
 
     @SuppressLint("StaticFieldLeak")
     public static volatile Context applicationContext;
@@ -469,33 +468,31 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
             editor.apply();
             ConnectionsManager.getInstance(UserConfig.selectedAccount).setPushConnectionEnabled(enabled);
         }
-        if (enabled) {
-            AndroidUtilities.runOnUIThread(() -> {
+        AndroidUtilities.runOnUIThread(() -> {
+            Intent intent = new Intent(applicationContext, NotificationsService.class);
+            AlarmManager alarm = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
+            if (enabled) {
                 try {
                     Log.d("TFOSS", "Starting push service...");
-                    applicationContext.startForegroundService(new Intent(applicationContext, NotificationsService.class));
+                    applicationContext.startForegroundService(intent);
 
-                    Log.d("TFOSS", "Trying to start push service every 10 minutes");
-                    // Telegram-FOSS: unconditionally enable push service
-                    AlarmManager am = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
-                    Intent i = new Intent(applicationContext, NotificationsService.class);
-                    pendingIntent = PendingIntent.getForegroundService(applicationContext, 0, i, PendingIntent.FLAG_IMMUTABLE);
-
-                    am.cancel(pendingIntent);
-                    am.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 10 * 60 * 1000, pendingIntent);
+                    PendingIntent restart = PendingIntent.getForegroundService(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+                    long interval = 10 * 60 * 1000L;
+                    alarm.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                            SystemClock.elapsedRealtime() + interval, interval, restart);
                 } catch (Throwable e) {
-                    Log.e("TFOSS", "Failed to start push service");
+                    Log.e("TFOSS", "Failed to start push service", e);
                 }
-            });
-
-        } else AndroidUtilities.runOnUIThread(() -> {
-            applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
-
-            PendingIntent pintent = PendingIntent.getService(applicationContext, 0, new Intent(applicationContext, NotificationsService.class), PendingIntent.FLAG_MUTABLE);
-            AlarmManager alarm = (AlarmManager)applicationContext.getSystemService(Context.ALARM_SERVICE);
-            alarm.cancel(pintent);
-            if (pendingIntent != null) {
-                alarm.cancel(pendingIntent);
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    PendingIntent restart = PendingIntent.getForegroundService(applicationContext, 0, intent,
+                            PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+                    if (restart != null) {
+                        alarm.cancel(restart);
+                        restart.cancel();
+                    }
+                }
+                applicationContext.stopService(intent);
             }
         });
     }
@@ -524,8 +521,8 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
                 }
                 SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
                 PushListenerController.sendRegistrationToServer(getPushProvider().getPushType(), null);
-                startPushService();
             }
+            startPushService();
         }, 1000);
     }
 

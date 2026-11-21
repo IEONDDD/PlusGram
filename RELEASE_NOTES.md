@@ -1,4 +1,11 @@
-# Plusgram 5.3.5
+# Plusgram 5.3.6
+
+- Softened the edges of Rain and Thunderstorm so clouds, raindrops, and lightning blend into the chat list header in light and dark themes.
+- Replaced the default Plusgram icon with the burgundy paper plane and plus mark across the Android launcher, icon picker, in-app branding, and README. Updated the monochrome notification and themed icons to match.
+- Fixed a crash when opening Chat Settings before the chat preview resources were loaded.
+- Fixed a background timer that could keep waking the built-in notification service after switching to FCM. The built-in service also skips the immediate duplicate wakeup when it starts.
+
+## Plusgram 5.3.5
 
 - Redesigned Northern Lights with softly layered, slowly drifting curtains.
 - Reworked Rain and Thunderstorm with wind-driven streaks at different depths, cloud haze, and occasional branching lightning.

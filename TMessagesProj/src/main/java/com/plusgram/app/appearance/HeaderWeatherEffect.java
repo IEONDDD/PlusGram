@@ -25,11 +25,13 @@ public final class HeaderWeatherEffect {
     public static final int RAIN = 6;
 
     private static final int DROPS_PER_LAYER = 18;
+    private static final int FRAME_INTERVAL_MS = 33;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Path lightning = new Path();
     private final Path lightningBranches = new Path();
     private final Random random = new Random();
     private long animationStarted;
+    private long nextFrameAt;
     private int currentEffect;
     private int width;
     private int height;
@@ -77,10 +79,13 @@ public final class HeaderWeatherEffect {
             animationStarted = now;
         }
         boolean animate = MotionConfig.enabled();
-        float seconds = animate ? ((now - animationStarted) / 33) * .033f : 0f;
+        long elapsed = now - animationStarted;
+        float seconds = animate ? (elapsed / FRAME_INTERVAL_MS) * (FRAME_INTERVAL_MS / 1000f) : 0f;
         drawFrame(canvas, effect, view.getWidth(), top, bottom, dark, seconds, animate);
-        if (animate && view.isShown() && view.getWindowVisibility() == View.VISIBLE) {
-            view.postInvalidateDelayed(33);
+        if (animate && now >= nextFrameAt && view.getWindowVisibility() == View.VISIBLE && view.isShown()) {
+            long delay = FRAME_INTERVAL_MS - elapsed % FRAME_INTERVAL_MS;
+            nextFrameAt = now + delay;
+            view.postInvalidateDelayed(delay, 0, top, view.getWidth(), bottom);
         }
     }
 
@@ -111,9 +116,9 @@ public final class HeaderWeatherEffect {
         auroraBounds.set(0, 0, width, height);
         auroraMist = haze(width * .69f, height * .56f, width * .60f, height * .49f,
                 dark ? 0x586B94CF : 0x376EA6BB);
-        cloudBank = haze(width * .70f, height * .15f, width * .64f, height * .75f,
+        cloudBank = haze(width * .70f, height * .36f, width * .72f, height * .36f,
                 dark ? 0xAA4F6290 : 0x807583A0);
-        cloudVeil = haze(width * .42f, height * .42f, width * .55f, height * .48f,
+        cloudVeil = haze(width * .42f, height * .54f, width * .65f, height * .42f,
                 dark ? 0x894E7292 : 0x6A7896A9);
         lightningGlow = new RadialGradient(0, 0, 1f,
                 dark ? 0x805F81F7 : 0x58617DEC, 0x00516ED6, Shader.TileMode.CLAMP);
@@ -234,11 +239,14 @@ public final class HeaderWeatherEffect {
             float y = fraction * (height + 2 * length) - length;
             float column = drop.column + pass * drop.step;
             float x = (column - (float) Math.floor(column)) * width - y * wind;
-            float edgeFade = Math.min(1f, Math.min(fraction, 1f - fraction) * 6f);
+            float tailY = y - length;
+            // Fade the whole streak clear of the toolbar edges, including its rounded tips.
+            float edgeFade = smoothstep((Math.min(tailY, height - y) - height * drop.thickness * .5f)
+                    / (height * .20f));
             float contrast = .55f + .45f * Math.min(1f, x / width + .18f);
             int opacity = (int) (drop.opacity * edgeFade * contrast * (storm ? 1.15f : 1f));
+            if (opacity == 0) continue;
             float tailX = x + length * wind;
-            float tailY = y - length;
             float midX = (x + tailX) * .5f;
             float midY = (y + tailY) * .5f;
             paint.setStrokeWidth(height * drop.thickness);
@@ -256,8 +264,8 @@ public final class HeaderWeatherEffect {
         if (boltCycle != cycle) prepareBolt(cycle);
         float brightness = 1f - age / .46f;
         brightness *= brightness;
-        glowPosition.setScale(height * 1.9f, height * .65f);
-        glowPosition.postTranslate(boltX, height * .37f);
+        glowPosition.setScale(height * 1.9f, height * .40f);
+        glowPosition.postTranslate(boltX, height * .43f);
         lightningGlow.setLocalMatrix(glowPosition);
         wash(canvas, lightningGlow, (int) (brightness * 150));
 
@@ -281,13 +289,13 @@ public final class HeaderWeatherEffect {
         random.setSeed(93L + cycle);
         boltX = width * (.52f + .20f * random.nextFloat());
         float x = boltX;
-        float y = height * .06f;
+        float y = height * .10f;
         lightning.rewind();
         lightningBranches.rewind();
         lightning.moveTo(x, y);
         for (int i = 0; i < 9; i++) {
             x += height * (.3f * random.nextFloat() - .16f);
-            y += height * (.055f + .026f * random.nextFloat());
+            y += height * (.050f + .019f * random.nextFloat());
             lightning.lineTo(x, y);
             if (i == 2 || i == 4 || i == 6) {
                 float direction = i == 4 ? -1f : 1f;

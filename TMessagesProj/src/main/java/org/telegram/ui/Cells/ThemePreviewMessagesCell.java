@@ -84,6 +84,9 @@ public class ThemePreviewMessagesCell extends LinearLayout {
     @SuppressLint("ClickableViewAccessibility")
     public ThemePreviewMessagesCell(Context context, INavigationLayout layout, int type, long dialogId, Theme.ResourcesProvider resourcesProvider) {
         super(context);
+        if (Theme.chat_msgInDrawable == null) {
+            Theme.createChatResources(context, false);
+        }
         this.type = type;
         int currentAccount = UserConfig.selectedAccount;
         parentLayout = layout;
