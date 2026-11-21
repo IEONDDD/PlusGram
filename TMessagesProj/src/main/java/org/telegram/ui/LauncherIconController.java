@@ -3,9 +3,12 @@ package org.telegram.ui;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
+
+import java.util.ArrayList;
 
 public class LauncherIconController {
     public static void tryFixLauncherIconIfNeeded() {
@@ -28,18 +31,40 @@ public class LauncherIconController {
                 || i == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT && icon == LauncherIcon.PLUSGRAM;
     }
 
-    public static void setIcon(LauncherIcon icon) {
+    public static synchronized void setIcon(LauncherIcon icon) {
         Context ctx = ApplicationLoader.applicationContext;
         PackageManager pm = ctx.getPackageManager();
-        for (LauncherIcon i : LauncherIcon.values()) {
-            pm.setComponentEnabledSetting(i.getComponentName(ctx), i == icon ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ArrayList<PackageManager.ComponentEnabledSetting> settings = new ArrayList<>();
+            for (LauncherIcon candidate : LauncherIcon.values()) {
+                settings.add(new PackageManager.ComponentEnabledSetting(candidate.getComponentName(ctx),
+                        candidate == icon ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP));
+            }
+            pm.setComponentEnabledSettings(settings);
+            return;
+        }
+
+        pm.setComponentEnabledSetting(icon.getComponentName(ctx), PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
+        for (LauncherIcon candidate : LauncherIcon.values()) {
+            if (candidate != icon && isEnabled(candidate)) {
+                pm.setComponentEnabledSetting(candidate.getComponentName(ctx), PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
+            }
         }
     }
 
     public enum LauncherIcon {
         PLUSGRAM("PlusgramIcon", R.drawable.plusgram_icon_background,
-                R.drawable.plusgram_icon_foreground, R.string.AppIconExteraless),
+                R.drawable.plusgram_icon_foreground, R.string.PlusgramIconClassic),
+        PLUSGRAM_LIGHT("PlusgramLightIcon", R.drawable.plusgram_icon_light_background,
+                R.drawable.plusgram_icon_light_foreground, R.string.PlusgramIconLight),
+        PLUSGRAM_BURGUNDY("PlusgramBurgundyIcon", R.drawable.plusgram_icon_burgundy_background,
+                R.drawable.plusgram_icon_burgundy_foreground, R.string.PlusgramIconBurgundy),
+        PLUSGRAM_POMEGRANATE("PlusgramPomegranateIcon", R.drawable.plusgram_icon_pomegranate_background,
+                R.drawable.plusgram_icon_pomegranate_foreground, R.string.PlusgramIconPomegranate),
         TELEGRAM("TelegramIcon", R.drawable.icon_background_sa,
                 R.mipmap.icon_foreground_sa, R.string.AppIconTelegramOriginal),
         VINTAGE("VintageIcon", R.drawable.icon_6_background_sa,
@@ -58,6 +83,18 @@ public class LauncherIconController {
         public final int foreground;
         public final int title;
         public final boolean premium;
+
+        public boolean isPlusgram() {
+            switch (this) {
+                case PLUSGRAM:
+                case PLUSGRAM_LIGHT:
+                case PLUSGRAM_BURGUNDY:
+                case PLUSGRAM_POMEGRANATE:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         private ComponentName componentName;
 

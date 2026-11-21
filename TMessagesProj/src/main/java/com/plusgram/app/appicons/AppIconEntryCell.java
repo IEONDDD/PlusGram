@@ -45,7 +45,7 @@ public class AppIconEntryCell extends FrameLayout implements NotificationCenter.
         }
 
         updateColors();
-        setOnClickListener(v -> fragment.presentFragment(new AppIconsActivity()));
+        setOnClickListener(v -> fragment.presentFragment(new AppIconsActivity(this::bind)));
     }
 
     private void updateColors() {

@@ -94,4 +94,14 @@
     <string name="OEProfileJoinedChannel">You subscribed to **%1$s** on %2$s</string>
     <string name="OEProfileChatCreated">**%1$s** was created on %2$s</string>
     <string name="OEProfileJoinDateUnknown">Join date is unavailable</string>
+    <string name="PlusgramIconClassic">Classic Waves</string>
+    <string name="PlusgramIconLight">Light Minimal</string>
+    <string name="PlusgramIconBurgundy">Burgundy</string>
+    <string name="PlusgramIconPomegranate">Pomegranate</string>
+    <string name="PlusgramIconClassicInfo">The original with two soft waves</string>
+    <string name="PlusgramIconLightInfo">Burgundy mark on a solid cream background</string>
+    <string name="PlusgramIconBurgundyInfo">Cream mark on a deep burgundy gradient</string>
+    <string name="PlusgramIconPomegranateInfo">Burgundy mark on a soft pink gradient</string>
+    <string name="PlusgramOtherAppIcons">Other app icons</string>
+    <string name="PlusgramAppIconChangeFailed">Could not change the app icon. Try again.</string>
 </resources>

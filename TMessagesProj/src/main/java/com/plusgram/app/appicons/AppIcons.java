@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
@@ -21,23 +22,26 @@ import org.telegram.ui.LauncherIconController;
 import org.telegram.ui.LauncherIconController.LauncherIcon;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 
 public final class AppIcons {
 
-    private static final HashMap<String, Integer> DESCRIPTIONS = new HashMap<>();
+    private static final EnumMap<LauncherIcon, Integer> DESCRIPTIONS = new EnumMap<>(LauncherIcon.class);
     private static final HashMap<LauncherIcon, Integer> accents = new HashMap<>();
-    private static volatile LauncherIcon pending;
 
-    // пока все подписи пустые, строка под названием не показывается
     static {
-        DESCRIPTIONS.put("PLUSGRAM", R.string.AppIconInfoExteraless);
-        DESCRIPTIONS.put("TELEGRAM", R.string.AppIconInfoTelegram);
-        DESCRIPTIONS.put("VINTAGE", R.string.AppIconInfoVintage);
-        DESCRIPTIONS.put("AQUA", R.string.AppIconInfoAqua);
-        DESCRIPTIONS.put("PREMIUM", R.string.AppIconInfoPremium);
-        DESCRIPTIONS.put("TURBO", R.string.AppIconInfoTurbo);
-        DESCRIPTIONS.put("NOX", R.string.AppIconInfoNox);    }
+        DESCRIPTIONS.put(LauncherIcon.PLUSGRAM, R.string.PlusgramIconClassicInfo);
+        DESCRIPTIONS.put(LauncherIcon.PLUSGRAM_LIGHT, R.string.PlusgramIconLightInfo);
+        DESCRIPTIONS.put(LauncherIcon.PLUSGRAM_BURGUNDY, R.string.PlusgramIconBurgundyInfo);
+        DESCRIPTIONS.put(LauncherIcon.PLUSGRAM_POMEGRANATE, R.string.PlusgramIconPomegranateInfo);
+        DESCRIPTIONS.put(LauncherIcon.TELEGRAM, R.string.AppIconInfoTelegram);
+        DESCRIPTIONS.put(LauncherIcon.VINTAGE, R.string.AppIconInfoVintage);
+        DESCRIPTIONS.put(LauncherIcon.AQUA, R.string.AppIconInfoAqua);
+        DESCRIPTIONS.put(LauncherIcon.PREMIUM, R.string.AppIconInfoPremium);
+        DESCRIPTIONS.put(LauncherIcon.TURBO, R.string.AppIconInfoTurbo);
+        DESCRIPTIONS.put(LauncherIcon.NOX, R.string.AppIconInfoNox);
+    }
 
     private AppIcons() {
     }
@@ -47,7 +51,7 @@ public final class AppIcons {
     }
 
     public static CharSequence description(LauncherIcon icon) {
-        Integer res = DESCRIPTIONS.get(icon.name());
+        Integer res = DESCRIPTIONS.get(icon);
         return res == null ? null : LocaleController.getString(res);
     }
 
@@ -76,10 +80,6 @@ public final class AppIcons {
     }
 
     public static LauncherIcon current() {
-        LauncherIcon applying = pending;
-        if (applying != null) {
-            return applying;
-        }
         for (LauncherIcon icon : LauncherIcon.values()) {
             if (LauncherIconController.isEnabled(icon)) {
                 return icon;
@@ -88,27 +88,32 @@ public final class AppIcons {
         return LauncherIcon.PLUSGRAM;
     }
 
-    public static void apply(LauncherIcon icon) {
-        pending = icon;
+    public static void apply(LauncherIcon icon, Runnable onSuccess, Runnable onFailure) {
         Utilities.globalQueue.postRunnable(() -> {
-            LauncherIconController.setIcon(icon);
-            if (pending == icon) {
-                pending = null;
+            try {
+                LauncherIconController.setIcon(icon);
+                AndroidUtilities.runOnUIThread(onSuccess);
+            } catch (RuntimeException e) {
+                FileLog.e(e);
+                AndroidUtilities.runOnUIThread(onFailure);
             }
         });
     }
 
     // слои 108dp, а видно только 72dp в центре
     static void draw(Canvas canvas, Drawable background, Drawable foreground, int size) {
-        int bleed = size / 4;
+        float center = size / 2f;
+        canvas.save();
+        canvas.scale(1.5f, 1.5f, center, center);
         if (background != null) {
-            background.setBounds(-bleed, -bleed, size + bleed, size + bleed);
+            background.setBounds(0, 0, size, size);
             background.draw(canvas);
         }
         if (foreground != null) {
-            foreground.setBounds(-bleed, -bleed, size + bleed, size + bleed);
+            foreground.setBounds(0, 0, size, size);
             foreground.draw(canvas);
         }
+        canvas.restore();
     }
 
     static int accent(Context context, LauncherIcon icon) {

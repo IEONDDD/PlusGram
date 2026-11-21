@@ -67,4 +67,14 @@
     <string name="OEProfileJoinDateUnknown">Дата вступления недоступна</string>
     <string name="AppIconsSelect">Выбрать</string>
     <string name="AppIconsKeep">Оставить эту</string>
+    <string name="PlusgramIconClassic">Классика с волнами</string>
+    <string name="PlusgramIconLight">Светлый минимализм</string>
+    <string name="PlusgramIconBurgundy">Бордовый фон</string>
+    <string name="PlusgramIconPomegranate">Гранатовый</string>
+    <string name="PlusgramIconClassicInfo">Фирменная иконка с мягкими волнами</string>
+    <string name="PlusgramIconLightInfo">Бордовый знак на однотонном фоне</string>
+    <string name="PlusgramIconBurgundyInfo">Светлый знак и тёмный градиент</string>
+    <string name="PlusgramIconPomegranateInfo">Светлый фон с розовым градиентом</string>
+    <string name="PlusgramOtherAppIcons">Другие иконки</string>
+    <string name="PlusgramAppIconChangeFailed">Не удалось сменить иконку. Попробуйте ещё раз.</string>
 </resources>

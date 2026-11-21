@@ -28,13 +28,16 @@ public class AppIconCell extends LinearLayout {
     private final IconPreviewView preview;
     private final CheckBox2 checkBox;
     private final TextView title;
+    private final int previewSize;
     private final Paint selectionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float selection;
     private ValueAnimator selectionAnimator;
 
-    public AppIconCell(Context context, Theme.ResourcesProvider resourcesProvider) {
+    public AppIconCell(Context context, Theme.ResourcesProvider resourcesProvider, boolean plusgram) {
         super(context);
         this.resourcesProvider = resourcesProvider;
+        previewSize = plusgram ? 80 : 68;
+        setFocusable(true);
         setWillNotDraw(false);
         setClipChildren(false);
         setOrientation(VERTICAL);
@@ -43,7 +46,7 @@ public class AppIconCell extends LinearLayout {
 
         previewContainer = new FrameLayout(context);
         previewContainer.setClipChildren(false);
-        preview = new IconPreviewView(context, 5);
+        preview = new IconPreviewView(context, plusgram ? 4 : 5);
         previewContainer.addView(preview, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         checkBox = new CheckBox2(context, 21, new Theme.ResourcesProvider() {
             @Override
@@ -56,13 +59,16 @@ public class AppIconCell extends LinearLayout {
         checkBox.setDrawBackgroundAsArc(4);
         checkBox.setProgressDelegate(progress -> preview.setPreviewScale(1f - progress * 0.08f));
         previewContainer.addView(checkBox, LayoutHelper.createFrame(24, 24, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, 1, 1));
-        addView(previewContainer, LayoutHelper.createLinear(68, 68, Gravity.CENTER_HORIZONTAL));
+        addView(previewContainer, LayoutHelper.createLinear(previewSize, previewSize, Gravity.CENTER_HORIZONTAL));
 
         title = new TextView(context);
         title.setMaxLines(2);
+        if (plusgram) {
+            title.setMinLines(2);
+        }
         title.setGravity(Gravity.CENTER);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, plusgram ? 14 : 13);
         title.setLineSpacing(0, 0.95f);
         title.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
         addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 0));
@@ -77,6 +83,7 @@ public class AppIconCell extends LinearLayout {
     public void set(LauncherIcon icon, boolean checked, boolean animated) {
         preview.setIcon(icon, false);
         title.setText(AppIcons.title(icon));
+        setSelected(checked);
         checkBox.setChecked(checked, animated);
         float to = checked ? 1f : 0f;
         if (selectionAnimator != null) {
@@ -102,7 +109,7 @@ public class AppIconCell extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int size = Math.max(AndroidUtilities.dp(40), Math.min(AndroidUtilities.dp(68),
+        int size = Math.max(AndroidUtilities.dp(40), Math.min(AndroidUtilities.dp(previewSize),
                 MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft() - getPaddingRight()));
         LayoutParams params = (LayoutParams) previewContainer.getLayoutParams();
         if (params.width != size) {

@@ -4,6 +4,8 @@ import android.text.InputType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.telegram.messenger.*;
+import org.telegram.ui.LauncherIconController.LauncherIcon;
+import com.plusgram.app.appicons.IconPreviewView;
 import com.plusgram.app.appearance.MaterialSettingsFragment;
 import static org.telegram.messenger.LocaleController.getString;
 
@@ -26,8 +28,8 @@ public final class TgwsSettingsActivity extends MaterialSettingsFragment {
     @Override protected void buildContent() {
         displayedEnabled = TgwsConfig.prefs().getBoolean("enabled", false);
         LinearLayout main = card(0);
-        android.widget.ImageView icon = new android.widget.ImageView(context);
-        icon.setImageResource(R.drawable.plusgram_icon);
+        IconPreviewView icon = new IconPreviewView(context, 0);
+        icon.setIcon(LauncherIcon.PLUSGRAM, false);
         LinearLayout.LayoutParams logo = new LinearLayout.LayoutParams(dp(80), dp(80));
         logo.gravity = android.view.Gravity.CENTER_HORIZONTAL;
         logo.topMargin = dp(24);

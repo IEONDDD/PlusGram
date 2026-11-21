@@ -1,4 +1,14 @@
-# Plusgram 5.3.6
+# Plusgram 5.3.8
+
+- Обновили фирменную иконку Plusgram в приложении, на рабочем столе Android и в README.
+- В настройках чатов появился выбор из четырёх фирменных вариантов с подписями и увеличенным предпросмотром.
+
+## Plusgram 5.3.7
+
+- Rebuilt the Plusgram icon with centered artwork and consistent spacing across the launcher, icon picker, app screens, and README.
+- Removed the permission to request package installation. Update checks now open the official GitHub release page, and APK attachments no longer launch the installer from chats.
+
+## Plusgram 5.3.6
 
 - Softened the edges of Rain and Thunderstorm so clouds, raindrops, and lightning blend into the chat list header in light and dark themes.
 - Replaced the default Plusgram icon with the burgundy paper plane and plus mark across the Android launcher, icon picker, in-app branding, and README. Updated the monochrome notification and themed icons to match.

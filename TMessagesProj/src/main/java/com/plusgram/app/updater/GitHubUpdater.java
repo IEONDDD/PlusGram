@@ -2,13 +2,10 @@ package com.plusgram.app.updater;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
-
-import androidx.core.content.FileProvider;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,14 +16,11 @@ import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
+import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.LaunchActivity;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -34,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -55,7 +48,6 @@ public final class GitHubUpdater {
 
     private static volatile OkHttpClient client;
     private static volatile boolean checking;
-    private static volatile Call download;
 
     private GitHubUpdater() {
     }
@@ -64,7 +56,6 @@ public final class GitHubUpdater {
         public String tag;
         public String name;
         public String body;
-        public String apkUrl;
         public String apkName;
         public long apkSize;
         public long published;
@@ -77,12 +68,6 @@ public final class GitHubUpdater {
 
     public interface CheckCallback {
         void onChecked(Release release, Boolean newer, boolean failed);
-    }
-
-    public interface DownloadListener {
-        void onProgress(long done, long total);
-
-        void onFinished(boolean success, boolean canceled);
     }
 
     private static OkHttpClient client() {
@@ -157,17 +142,6 @@ public final class GitHubUpdater {
         return prefs().getLong(KEY_LAST_CHECK, 0);
     }
 
-    public static boolean isDownloading() {
-        return download != null;
-    }
-
-    public static void cancelDownload() {
-        Call call = download;
-        if (call != null) {
-            call.cancel();
-        }
-    }
-
     private static void bulletin(String text, boolean error) {
         BaseFragment fragment = LaunchActivity.getSafeLastFragment();
         if (fragment == null) {
@@ -217,7 +191,6 @@ public final class GitHubUpdater {
             release.tag = item.optString("tag_name");
             release.name = item.optString("name", release.tag);
             release.body = item.optString("body", "");
-            release.apkUrl = asset.optString("browser_download_url");
             release.apkName = asset.optString("name");
             release.apkSize = asset.optLong("size");
             release.published = parseDate(item.optString("published_at"));
@@ -325,121 +298,24 @@ public final class GitHubUpdater {
             subtitle.append(" · ").append(size);
         }
         String notes = TextUtils.isEmpty(release.body) ? release.tag : release.body;
-        String updateText = size.isEmpty() ? LocaleController.getString(R.string.OEUpdateInstall)
-                : LocaleController.formatString(R.string.OEUpdateInstallSize, size);
         new UpdateSheet(activity, fragment.getResourceProvider(), LocaleController.getString(R.string.OEUpdateTitle),
-                subtitle.toString(), notes, updateText, new UpdateSheet.Delegate() {
+                subtitle.toString(), notes, new UpdateSheet.Delegate() {
             @Override
-            public void onUpdate(UpdateSheet sheet) {
-                sheet.setDownloading(true);
-                download(activity, release, new DownloadListener() {
-                    @Override
-                    public void onProgress(long done, long total) {
-                        sheet.setProgress(done, total);
-                    }
-
-                    @Override
-                    public void onFinished(boolean success, boolean canceled) {
-                        if (success) {
-                            sheet.finishDownload();
-                        } else if (!canceled) {
-                            sheet.setDownloading(false);
-                        }
-                    }
-                });
+            public void onUpdate() {
+                openReleasePage(activity, release);
             }
 
             @Override
             public void onSkip() {
                 prefs().edit().putString(KEY_SKIPPED, release.tag).apply();
             }
-
-            @Override
-            public void onCancelDownload() {
-                cancelDownload();
-            }
         }).show();
     }
 
-    public static void download(Activity activity, Release release, DownloadListener listener) {
-        if (download != null) {
-            return;
-        }
-        File dir = new File(activity.getCacheDir(), "updates");
-        if (!dir.exists() && !dir.mkdirs()) {
-            bulletin(LocaleController.getString(R.string.OEUpdateDownloadFailed), true);
-            listener.onFinished(false, false);
-            return;
-        }
-        File[] old = dir.listFiles();
-        if (old != null) {
-            for (File file : old) {
-                file.delete();
-            }
-        }
-        File target = new File(dir, release.apkName.replaceAll("[^A-Za-z0-9._-]", "_"));
-        Call call = client().newCall(new Request.Builder().url(release.apkUrl)
-                .header("User-Agent", "Plusgram").build());
-        download = call;
-        new Thread(() -> {
-            boolean ok = false;
-            try (Response response = call.execute()) {
-                ResponseBody body = response.body();
-                if (!response.isSuccessful() || body == null) {
-                    throw new IllegalStateException("HTTP " + response.code());
-                }
-                long total = body.contentLength() > 0 ? body.contentLength() : release.apkSize;
-                try (InputStream input = body.byteStream(); OutputStream output = new FileOutputStream(target)) {
-                    byte[] buffer = new byte[64 * 1024];
-                    long done = 0;
-                    int lastPercent = -1;
-                    int read;
-                    while ((read = input.read(buffer)) > 0) {
-                        output.write(buffer, 0, read);
-                        done += read;
-                        if (total > 0) {
-                            int percent = (int) (done * 100 / total);
-                            if (percent != lastPercent) {
-                                lastPercent = percent;
-                                final long doneBytes = done;
-                                AndroidUtilities.runOnUIThread(() -> listener.onProgress(doneBytes, total));
-                            }
-                        }
-                    }
-                }
-                ok = true;
-            } catch (Exception e) {
-                if (!call.isCanceled()) {
-                    FileLog.e("GitHubUpdater: download failed", e);
-                }
-            }
-            final boolean success = ok;
-            AndroidUtilities.runOnUIThread(() -> {
-                download = null;
-                if (success) {
-                    listener.onFinished(true, false);
-                    install(activity, target);
-                } else {
-                    target.delete();
-                    listener.onFinished(false, call.isCanceled());
-                    if (!call.isCanceled()) {
-                        bulletin(LocaleController.getString(R.string.OEUpdateDownloadFailed), true);
-                    }
-                }
-            });
-        }, "gh-updater-download").start();
-    }
-
-    private static void install(Activity activity, File file) {
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setDataAndType(FileProvider.getUriForFile(activity, ApplicationLoader.getApplicationId() + ".provider", file),
-                    "application/vnd.android.package-archive");
-            activity.startActivity(intent);
-        } catch (Exception e) {
-            FileLog.e(e);
-            bulletin(LocaleController.getString(R.string.OEUpdateDownloadFailed), true);
-        }
+    static void openReleasePage(Context context, Release release) {
+        String url = TextUtils.isEmpty(release.tag)
+                ? RELEASES_URL
+                : RELEASES_URL + "/tag/" + Uri.encode(release.tag);
+        Browser.openUrlInSystemBrowser(context, url);
     }
 }

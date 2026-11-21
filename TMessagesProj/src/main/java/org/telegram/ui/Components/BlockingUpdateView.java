@@ -1,10 +1,5 @@
 package org.telegram.ui.Components;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -21,40 +16,28 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.plusgram.app.updater.GitHubUpdater;
+
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.BuildVars;
-import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
-import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.browser.Browser;
-import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.voip.CellFlickerDrawable;
 
-import java.util.Locale;
-
 import tw.nekomimi.nekogram.TextViewEffects;
 import tw.nekomimi.nekogram.helpers.remote.UpdateHelper;
 
-public class BlockingUpdateView extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
+public class BlockingUpdateView extends FrameLayout {
 
     private TextView textView;
     private TextView acceptTextView;
-    private FrameLayout radialProgressView;
     private FrameLayout acceptButton;
-    private RadialProgress radialProgress;
     private ScrollView scrollView;
 
-    private AnimatorSet progressAnimation;
-
-    private TLRPC.TL_help_appUpdate appUpdate;
-    private String fileName;
-    private int accountNum;
     private int pressCount;
 
     public BlockingUpdateView(final Context context) {
@@ -87,7 +70,6 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         scrollView.setClipToPadding(false);
         addView(scrollView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.TOP, 27, 178 + top, 27, 130));
 
-
         scrollView.addView(container);
 
         TextView titleTextView = new TextView(context);
@@ -105,7 +87,6 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         textView.setGravity(Gravity.LEFT | Gravity.TOP);
         textView.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
         container.addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 44, 0, 0));
-
 
         acceptButton = new FrameLayout(context) {
             CellFlickerDrawable cellFlickerDrawable;
@@ -139,14 +120,7 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         acceptButton.setPadding(AndroidUtilities.dp(34), 0, AndroidUtilities.dp(34), 0);
         addView(acceptButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 46, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 0, 0, 45));
         acceptButton.setOnClickListener(view1 -> {
-            if (appUpdate.document instanceof TLRPC.TL_document) {
-                if (!ApplicationLoader.applicationLoaderInstance.openApkInstall((Activity) getContext(), appUpdate.document)) {
-                    FileLoader.getInstance(accountNum).loadFile(appUpdate.document, "update", FileLoader.PRIORITY_HIGH, 1);
-                    showProgress(true);
-                }
-            } else if (appUpdate.url != null) {
-                Browser.openUrl(getContext(), appUpdate.url);
-            }
+            Browser.openUrlInSystemBrowser(getContext(), GitHubUpdater.RELEASES_URL);
         });
 
         acceptTextView = new TextView(context);
@@ -155,128 +129,10 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         acceptTextView.setTextColor(0xffffffff);
         acceptTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         acceptButton.addView(acceptTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
-
-        radialProgressView = new FrameLayout(context) {
-            @Override
-            protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-                super.onLayout(changed, left, top, right, bottom);
-                int width = right - left;
-                int height = bottom - top;
-                int w = AndroidUtilities.dp(36);
-                int l = (width - w) / 2;
-                int t = (height - w) / 2;
-                radialProgress.setProgressRect(l, t, l + w, t + w);
-            }
-
-            @Override
-            protected void onDraw(Canvas canvas) {
-                radialProgress.draw(canvas);
-            }
-        };
-        radialProgressView.setWillNotDraw(false);
-        radialProgressView.setAlpha(0.0f);
-        radialProgressView.setScaleX(0.1f);
-        radialProgressView.setScaleY(0.1f);
-        radialProgressView.setVisibility(View.INVISIBLE);
-        radialProgress = new RadialProgress(radialProgressView);
-        radialProgress.setBackground(null, true, false);
-        radialProgress.setProgressColor(0xffffffff);
-        acceptButton.addView(radialProgressView, LayoutHelper.createFrame(36, 36, Gravity.CENTER));
-    }
-
-    @Override
-    public void setVisibility(int visibility) {
-        super.setVisibility(visibility);
-        if (visibility == GONE) {
-            NotificationCenter.getInstance(accountNum).removeObserver(this, NotificationCenter.fileLoaded);
-            NotificationCenter.getInstance(accountNum).removeObserver(this, NotificationCenter.fileLoadFailed);
-            NotificationCenter.getInstance(accountNum).removeObserver(this, NotificationCenter.fileLoadProgressChanged);
-        }
-    }
-
-    @Override
-    public void didReceivedNotification(int id, int account, Object... args) {
-        if (id == NotificationCenter.fileLoaded) {
-            String location = (String) args[0];
-            if (fileName != null && fileName.equals(location)) {
-                showProgress(false);
-                ApplicationLoader.applicationLoaderInstance.openApkInstall((Activity) getContext(), appUpdate.document);
-            }
-        } else if (id == NotificationCenter.fileLoadFailed) {
-            String location = (String) args[0];
-            if (fileName != null && fileName.equals(location)) {
-                showProgress(false);
-            }
-        } else if (id == NotificationCenter.fileLoadProgressChanged) {
-            String location = (String) args[0];
-            if (fileName != null && fileName.equals(location)) {
-                Long loadedSize = (Long) args[1];
-                Long totalSize = (Long) args[2];
-                float progress = Math.min(1f, loadedSize / (float) totalSize);
-                radialProgress.setProgress(progress, true);
-            }
-        }
-    }
-
-
-
-    private void showProgress(final boolean show) {
-        if (progressAnimation != null) {
-            progressAnimation.cancel();
-        }
-        progressAnimation = new AnimatorSet();
-        if (show) {
-            radialProgressView.setVisibility(View.VISIBLE);
-            acceptButton.setEnabled(false);
-            progressAnimation.playTogether(
-                    ObjectAnimator.ofFloat(acceptTextView, View.SCALE_X, 0.1f),
-                    ObjectAnimator.ofFloat(acceptTextView, View.SCALE_Y, 0.1f),
-                    ObjectAnimator.ofFloat(acceptTextView, View.ALPHA, 0.0f),
-                    ObjectAnimator.ofFloat(radialProgressView, View.SCALE_X, 1.0f),
-                    ObjectAnimator.ofFloat(radialProgressView, View.SCALE_Y, 1.0f),
-                    ObjectAnimator.ofFloat(radialProgressView, View.ALPHA, 1.0f));
-        } else {
-            acceptTextView.setVisibility(View.VISIBLE);
-            acceptButton.setEnabled(true);
-            progressAnimation.playTogether(
-                    ObjectAnimator.ofFloat(radialProgressView, View.SCALE_X, 0.1f),
-                    ObjectAnimator.ofFloat(radialProgressView, View.SCALE_Y, 0.1f),
-                    ObjectAnimator.ofFloat(radialProgressView, View.ALPHA, 0.0f),
-                    ObjectAnimator.ofFloat(acceptTextView, View.SCALE_X, 1.0f),
-                    ObjectAnimator.ofFloat(acceptTextView, View.SCALE_Y, 1.0f),
-                    ObjectAnimator.ofFloat(acceptTextView, View.ALPHA, 1.0f));
-
-        }
-        progressAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (progressAnimation != null && progressAnimation.equals(animation)) {
-                    if (!show) {
-                        radialProgressView.setVisibility(View.INVISIBLE);
-                    } else {
-                        acceptTextView.setVisibility(View.INVISIBLE);
-                    }
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                if (progressAnimation != null && progressAnimation.equals(animation)) {
-                    progressAnimation = null;
-                }
-            }
-        });
-        progressAnimation.setDuration(150);
-        progressAnimation.start();
     }
 
     public void show(int account, TLRPC.TL_help_appUpdate update, boolean check) {
         pressCount = 0;
-        appUpdate = update;
-        accountNum = account;
-        if (update.document instanceof TLRPC.TL_document) {
-            fileName = FileLoader.getAttachFileName(update.document);
-        }
         if (getVisibility() != VISIBLE) {
             setVisibility(VISIBLE);
         }
@@ -284,14 +140,7 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         MessageObject.addEntitiesToText(builder, update.entities, false, false, false, false);
         MessageObject.replaceAnimatedEmoji(builder, update.entities, textView.getPaint().getFontMetricsInt());
         textView.setText(builder);
-        if (update.document instanceof TLRPC.TL_document) {
-            acceptTextView.setText(LocaleController.getString(R.string.Update) + String.format(Locale.US, " (%1$s)", AndroidUtilities.formatFileSize(update.document.size)));
-        } else {
-            acceptTextView.setText(LocaleController.getString(R.string.Update));
-        }
-        NotificationCenter.getInstance(accountNum).addObserver(this, NotificationCenter.fileLoaded);
-        NotificationCenter.getInstance(accountNum).addObserver(this, NotificationCenter.fileLoadFailed);
-        NotificationCenter.getInstance(accountNum).addObserver(this, NotificationCenter.fileLoadProgressChanged);
+        acceptTextView.setText(LocaleController.getString(R.string.OEUpdaterOpenRelease));
         if (check) {
             UpdateHelper.getInstance().checkNewVersionAvailable((response, error) -> AndroidUtilities.runOnUIThread(() -> {
                 if (response != null) {

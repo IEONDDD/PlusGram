@@ -3,15 +3,13 @@ package com.plusgram.app.settings;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.text.TextUtils;
-import android.graphics.Canvas;
-import android.graphics.Path;
 import android.view.HapticFeedbackConstants;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.plusgram.app.appicons.IconPreviewView;
 import com.plusgram.app.icons.IconPacksConfig;
 import com.plusgram.app.icons.IconShapeHelper;
 
@@ -22,6 +20,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
+import org.telegram.ui.LauncherIconController.LauncherIcon;
 
 /**
  * About-шапка корневого экрана exteraless.
@@ -35,44 +34,21 @@ import org.telegram.ui.Components.LayoutHelper;
  */
 public class AboutHeaderCell extends LinearLayout {
 
-    /** Цвет подложки иконки приложения, как R.color.ic_background в exteraGram. */
-    public static final int LOGO_BACKGROUND = 0xFFE83030;
-
-    /** Путь формы логотипа. Считается один раз, сбрасывается при смене режима. */
-    private Path shapePath;
-    private final ImageView logo;
-
-    private Path shapePath() {
-        if (shapePath == null) {
-            shapePath = IconShapeHelper.getFinalIconShapePath(72, 72, 18);
-        }
-        return shapePath;
-    }
+    private final IconPreviewView logo;
 
     public AboutHeaderCell(Context context) {
         super(context);
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER);
 
-        logo = new ImageView(context) {
-            @Override
-            public void draw(Canvas canvas) {
-                canvas.save();
-                canvas.clipPath(shapePath());
-                super.draw(canvas);
-                canvas.restore();
-            }
-        };
-        logo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        logo.setBackgroundColor(LOGO_BACKGROUND);
-        logo.setImageResource(R.drawable.plusgram_icon);
+        logo = new IconPreviewView(context, 0);
+        logo.setIcon(LauncherIcon.PLUSGRAM, false);
         logo.setOnLongClickListener(v -> {
             IconPacksConfig.toggleSystemIconShape();
             IconShapeHelper.invalidate();
-            shapePath = null;
+            logo.invalidateShape();
             v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                     HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
-            v.invalidate();
             return true;
         });
         addView(logo, LayoutHelper.createLinear(72, 72,

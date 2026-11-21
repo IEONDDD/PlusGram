@@ -27,7 +27,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -40,7 +39,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -776,36 +774,6 @@ public class ApplicationLoader extends Application implements CameraXConfig.Prov
 
     protected void logDualCameraInternal(boolean success, boolean vendor) {
 
-    }
-
-    public boolean checkApkInstallPermissions(final Context context) {
-        return false;
-    }
-
-    public boolean openApkInstall(Activity activity, TLRPC.Document document) {
-        boolean exists = false;
-        try {
-            String fileName = FileLoader.getAttachFileName(document);
-            File f = FileLoader.getInstance(UserConfig.selectedAccount).getPathToAttach(document, true);
-            if (exists = f.exists()) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                if (Build.VERSION.SDK_INT >= 24) {
-                    intent.setDataAndType(FileProvider.getUriForFile(activity, ApplicationLoader.getApplicationId() + ".provider", f), "application/vnd.android.package-archive");
-                } else {
-                    intent.setDataAndType(Uri.fromFile(f), "application/vnd.android.package-archive");
-                }
-                try {
-                    activity.startActivityForResult(intent, 500);
-                } catch (Exception e) {
-                    FileLog.e(e);
-                }
-            }
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
-        return exists;
     }
 
     @Nullable

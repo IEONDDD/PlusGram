@@ -26,8 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Components.AppIconBulletinLayout;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.CubicBezierInterpolator;
@@ -45,7 +47,15 @@ import java.util.ArrayList;
 
 public class AppIconsActivity extends BaseFragment {
 
+    private static final int PLUSGRAM_ICON = 0;
+    private static final int OTHER_ICONS_HEADER = 1;
+    private static final int OTHER_ICON = 2;
+
     private final ArrayList<LauncherIcon> icons = new ArrayList<>();
+    private final Runnable onIconChanged;
+    private int brandCount;
+    private boolean applying;
+
     private LauncherIcon appliedIcon;
     private LauncherIcon previewIcon;
 
@@ -64,6 +74,10 @@ public class AppIconsActivity extends BaseFragment {
     private float collapse;
     private float topFade;
 
+    public AppIconsActivity(Runnable onIconChanged) {
+        this.onIconChanged = onIconChanged;
+    }
+
     @Override
     public boolean isSupportEdgeToEdge() {
         return true;
@@ -73,6 +87,12 @@ public class AppIconsActivity extends BaseFragment {
     public View createView(Context context) {
         icons.clear();
         icons.addAll(AppIcons.available(currentAccount));
+        brandCount = 0;
+        for (LauncherIcon icon : icons) {
+            if (icon.isPlusgram()) {
+                brandCount++;
+            }
+        }
         appliedIcon = previewIcon = AppIcons.current();
         tint = AppIcons.tint(AppIcons.accent(context, previewIcon));
 
@@ -106,13 +126,28 @@ public class AppIconsActivity extends BaseFragment {
         listView = new RecyclerListView(context, getResourceProvider());
         layoutManager = new GridLayoutManager(context, 4);
         listView.setLayoutManager(layoutManager);
-        listView.setAdapter(new Adapter());
+        Adapter adapter = new Adapter();
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                int span = layoutManager.getSpanCount();
+                switch (adapter.getItemViewType(position)) {
+                    case PLUSGRAM_ICON:
+                        return span / (span >= 8 ? 4 : 2);
+                    case OTHER_ICONS_HEADER:
+                        return span;
+                    default:
+                        return 1;
+                }
+            }
+        });
+        listView.setAdapter(adapter);
         listView.setClipToPadding(false);
         listView.setVerticalScrollBarEnabled(false);
         listView.setSelectorDrawableColor(Color.TRANSPARENT);
         listView.setOnItemClickListener((view, position) -> {
-            if (position >= 0 && position < icons.size()) {
-                preview(icons.get(position));
+            if (!applying && view instanceof AppIconCell) {
+                preview(((AppIconCell) view).getIcon());
             }
         });
         listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -185,7 +220,7 @@ public class AppIconsActivity extends BaseFragment {
     }
 
     private void apply() {
-        if (previewIcon == null) {
+        if (applying || previewIcon == null) {
             return;
         }
         if (previewIcon == appliedIcon) {
@@ -196,15 +231,37 @@ public class AppIconsActivity extends BaseFragment {
             showDialog(new PremiumFeatureBottomSheet(this, PremiumPreviewFragment.PREMIUM_FEATURE_APPLICATION_ICONS, true));
             return;
         }
-        AppIcons.apply(previewIcon);
-        appliedIcon = previewIcon;
-        updateButton(true);
-        Bulletin.make(this, new AppIconBulletinLayout(getContext(), appliedIcon, getResourceProvider()), Bulletin.DURATION_SHORT).show();
+        LauncherIcon selected = previewIcon;
+        applying = true;
+        button.setLoading(true);
+        AppIcons.apply(selected, () -> {
+            appliedIcon = selected;
+            applying = false;
+            if (onIconChanged != null) {
+                onIconChanged.run();
+            }
+            if (getParentActivity() != null) {
+                button.setLoading(false);
+                updateButton(true);
+                Bulletin.make(this, new AppIconBulletinLayout(getContext(), selected, getResourceProvider()),
+                        Bulletin.DURATION_SHORT).show();
+            }
+        }, () -> {
+            applying = false;
+            if (getParentActivity() != null) {
+                button.setLoading(false);
+                showDialog(new AlertDialog.Builder(getContext(), getResourceProvider())
+                        .setMessage(getString(R.string.PlusgramAppIconChangeFailed))
+                        .setPositiveButton(getString(R.string.OK), null).create());
+            }
+        });
     }
 
     private void updateButton(boolean animated) {
         if (button != null) {
-            button.setText(getString(previewIcon == appliedIcon ? R.string.AppIconsKeep : R.string.AppIconsSelect), animated);
+            String label = getString(previewIcon == appliedIcon ? R.string.AppIconsKeep : R.string.AppIconsSelect);
+            button.setText(label, animated);
+            button.setContentDescription(label);
         }
     }
 
@@ -308,9 +365,7 @@ public class AppIconsActivity extends BaseFragment {
     }
 
     private int spanCount(int width) {
-        float available = width - AndroidUtilities.dp(8) * 2;
-        int count = Math.max(3, Math.min(8, Math.round(available / AndroidUtilities.dp(100))));
-        return count < 8 && available / count > AndroidUtilities.dp(112) ? count + 1 : count;
+        return width >= AndroidUtilities.dp(640) ? 8 : 4;
     }
 
     private class ContentView extends FrameLayout {
@@ -411,26 +466,43 @@ public class AppIconsActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
-            return true;
+            return holder.itemView instanceof AppIconCell;
         }
 
         @Override
         public int getItemCount() {
-            return icons.size();
+            return icons.size() + 1;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (position < brandCount) {
+                return PLUSGRAM_ICON;
+            }
+            return position == brandCount ? OTHER_ICONS_HEADER : OTHER_ICON;
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            AppIconCell cell = new AppIconCell(parent.getContext(), getResourceProvider());
+            View cell;
+            if (viewType == OTHER_ICONS_HEADER) {
+                HeaderCell header = new HeaderCell(parent.getContext(), getResourceProvider());
+                header.setText(getString(R.string.PlusgramOtherAppIcons));
+                cell = header;
+            } else {
+                cell = new AppIconCell(parent.getContext(), getResourceProvider(), viewType == PLUSGRAM_ICON);
+            }
             cell.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             return new RecyclerListView.Holder(cell);
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            LauncherIcon icon = icons.get(position);
-            ((AppIconCell) holder.itemView).set(icon, icon == previewIcon, false);
+            if (holder.itemView instanceof AppIconCell) {
+                LauncherIcon icon = icons.get(position < brandCount ? position : position - 1);
+                ((AppIconCell) holder.itemView).set(icon, icon == previewIcon, false);
+            }
         }
     }
 }

@@ -988,6 +988,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
     @Override
     public View createView(Context context) {
+        Theme.createChatResources(context, false);
         lastIsDarkTheme = !Theme.isCurrentThemeDay();
 
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);

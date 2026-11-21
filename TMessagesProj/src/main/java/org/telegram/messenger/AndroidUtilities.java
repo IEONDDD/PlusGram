@@ -4251,6 +4251,21 @@ public class AndroidUtilities {
         return key_hash;
     }
 
+    private static boolean isApkAttachment(File file, String fileName, String mimeType) {
+        return "application/vnd.android.package-archive".equalsIgnoreCase(mimeType)
+                || fileName != null && fileName.toLowerCase(Locale.ROOT).endsWith(".apk")
+                || file.getName().toLowerCase(Locale.ROOT).endsWith(".apk");
+    }
+
+    private static void showApkInstallUnavailable(Activity activity, Theme.ResourcesProvider resourcesProvider) {
+        if (activity != null) {
+            new AlertDialog.Builder(activity, resourcesProvider)
+                    .setMessage(getString(R.string.PlusgramApkInstallUnavailable))
+                    .setPositiveButton(getString(R.string.OK), null)
+                    .show();
+        }
+    }
+
     public static void openDocument(MessageObject message, Activity activity, BaseFragment parentFragment) {
         if (message == null) {
             return;
@@ -4268,6 +4283,10 @@ public class AndroidUtilities {
             f = FileLoader.getInstance(UserConfig.selectedAccount).getPathToMessage(message.messageOwner);
         }
         if (f != null && f.exists()) {
+            if (isApkAttachment(f, fileName, document.mime_type)) {
+                showApkInstallUnavailable(activity, parentFragment == null ? null : parentFragment.getResourceProvider());
+                return;
+            }
             // exteraless plugins: плагин может перехватить открытие файла по расширению.
             if (com.plusgram.app.plugins.files.FilesControllerJava.dispatchOpenFile(f, fileName, document.mime_type, message, activity, parentFragment, UserConfig.selectedAccount)) {
                 return;
@@ -4347,6 +4366,12 @@ public class AndroidUtilities {
 
     public static boolean openForView(File f, String fileName, String mimeType, final Activity activity, Theme.ResourcesProvider resourcesProvider, boolean restrict) {
         if (f != null && f.exists()) {
+            if (isApkAttachment(f, fileName, mimeType)) {
+                if (!restrict) {
+                    showApkInstallUnavailable(activity, resourcesProvider);
+                }
+                return true;
+            }
             // exteraless plugins: плагин может перехватить открытие файла по расширению.
             if (com.plusgram.app.plugins.files.FilesControllerJava.dispatchOpenFile(f, fileName, mimeType, null, activity, null, UserConfig.selectedAccount)) {
                 return true;
@@ -4367,13 +4392,6 @@ public class AndroidUtilities {
                     if (realMimeType == null || realMimeType.length() == 0) {
                         realMimeType = null;
                     }
-                }
-            }
-            if (realMimeType != null && realMimeType.equals("application/vnd.android.package-archive")) {
-                if (restrict) return true;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !ApplicationLoader.applicationContext.getPackageManager().canRequestPackageInstalls()) {
-                    AlertsCreator.createApkRestrictedDialog(activity, resourcesProvider).show();
-                    return true;
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

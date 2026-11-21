@@ -723,18 +723,10 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
 
         private final GenericProvider<Void, Bitmap> appIconProvider = v -> {
             int size = dp(ICON_HEIGHT_DP);
-            int bleed = size / 4;
             Bitmap icon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-            Canvas iconCanvas = new Canvas(icon);
-            Resources resources = getParentActivity().getResources();
-            for (int resId : new int[]{R.drawable.plusgram_icon_background, R.drawable.plusgram_icon_foreground}) {
-                Drawable layer = resources.getDrawable(resId);
-                if (layer == null) {
-                    continue;
-                }
-                layer.setBounds(-bleed, -bleed, size + bleed, size + bleed);
-                layer.draw(iconCanvas);
-            }
+            Drawable logo = getParentActivity().getDrawable(R.drawable.plusgram_icon);
+            logo.setBounds(0, 0, size, size);
+            logo.draw(new Canvas(icon));
             Bitmap bm = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(bm);
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);

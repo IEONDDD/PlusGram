@@ -23,12 +23,10 @@ import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
-import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
-import org.telegram.ui.Components.LineProgressView;
 import org.telegram.ui.Components.TypefaceSpan;
 import org.telegram.ui.Components.URLSpanNoUnderline;
 
@@ -38,28 +36,15 @@ import java.util.regex.Pattern;
 public class UpdateSheet extends BottomSheet {
 
     public interface Delegate {
-        void onUpdate(UpdateSheet sheet);
-
+        void onUpdate();
         void onSkip();
-
-        void onCancelDownload();
     }
 
     private static final Pattern LINK = Pattern.compile("\\[([^\\]]+)]\\((https?://[^)\\s]+)\\)");
 
-    private final Delegate delegate;
-    private final TextView primaryButton;
-    private final TextView secondaryButton;
-    private final TextView skipButton;
-    private final LineProgressView progressView;
-    private final String updateText;
-    private boolean downloading;
-
     public UpdateSheet(Context context, Theme.ResourcesProvider resourcesProvider, String title,
-                       String subtitle, String notes, String updateText, Delegate delegate) {
+                       String subtitle, String notes, Delegate delegate) {
         super(context, false, resourcesProvider);
-        this.delegate = delegate;
-        this.updateText = updateText;
         fixNavigationBar();
 
         final int accent = getThemedColor(Theme.key_featuredStickers_addButton);
@@ -128,16 +113,10 @@ public class UpdateSheet extends BottomSheet {
         card.addView(scrollView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         container.addView(card, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 12, 0, 12));
 
-        progressView = new LineProgressView(context);
-        progressView.setProgressColor(accent);
-        progressView.setBackColor(getThemedColor(Theme.key_graySection));
-        progressView.setVisibility(View.GONE);
-        container.addView(progressView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 4, 2, 0, 2, 12));
-
         LinearLayout buttons = new LinearLayout(context);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
 
-        secondaryButton = new TextView(context);
+        TextView secondaryButton = new TextView(context);
         secondaryButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         secondaryButton.setTypeface(AndroidUtilities.bold());
         secondaryButton.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
@@ -147,7 +126,7 @@ public class UpdateSheet extends BottomSheet {
         secondaryButton.setOnClickListener(v -> dismiss());
         buttons.addView(secondaryButton, LayoutHelper.createLinear(0, 46, 1f, Gravity.NO_GRAVITY, 0, 0, 8, 0));
 
-        primaryButton = new TextView(context);
+        TextView primaryButton = new TextView(context);
         primaryButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         primaryButton.setTypeface(AndroidUtilities.bold());
         primaryButton.setTextColor(getThemedColor(Theme.key_featuredStickers_buttonText));
@@ -156,66 +135,28 @@ public class UpdateSheet extends BottomSheet {
         primaryButton.setSingleLine(true);
         primaryButton.setEllipsize(TextUtils.TruncateAt.END);
         primaryButton.setPadding(dp(8), 0, dp(8), 0);
-        primaryButton.setText(updateText);
+        primaryButton.setText(getString(R.string.OEUpdaterOpenRelease));
         primaryButton.setOnClickListener(v -> {
-            if (!downloading && delegate != null) {
-                delegate.onUpdate(this);
-            }
+            delegate.onUpdate();
+            dismiss();
         });
         buttons.addView(primaryButton, LayoutHelper.createLinear(0, 46, 1.4f, Gravity.NO_GRAVITY));
 
         container.addView(buttons, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
-        skipButton = new TextView(context);
+        TextView skipButton = new TextView(context);
         skipButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         skipButton.setTextColor(getThemedColor(Theme.key_dialogTextGray2));
         skipButton.setGravity(Gravity.CENTER);
         skipButton.setText(getString(R.string.OEUpdateSkip));
         skipButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), Theme.RIPPLE_MASK_ROUNDRECT_6DP));
         skipButton.setOnClickListener(v -> {
-            if (delegate != null) {
-                delegate.onSkip();
-            }
+            delegate.onSkip();
             dismiss();
         });
         container.addView(skipButton, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, 36, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 0));
 
         setCustomView(container);
-    }
-
-    public void setDownloading(boolean value) {
-        downloading = value;
-        progressView.setVisibility(value ? View.VISIBLE : View.GONE);
-        progressView.setProgress(0, false);
-        skipButton.setVisibility(value ? View.GONE : View.VISIBLE);
-        secondaryButton.setText(getString(value ? R.string.Cancel : R.string.OEUpdateLater));
-        primaryButton.setText(value ? getString(R.string.OEUpdateDownloading) : updateText);
-    }
-
-    public void setProgress(long done, long total) {
-        if (total > 0) {
-            progressView.setProgress(done / (float) total, true);
-            primaryButton.setText(LocaleController.formatString(R.string.OEUpdateDownloadProgress,
-                    AndroidUtilities.formatFileSize(done), AndroidUtilities.formatFileSize(total)));
-        }
-    }
-
-    public boolean isDownloading() {
-        return downloading;
-    }
-
-    @Override
-    public void dismiss() {
-        if (downloading && delegate != null) {
-            delegate.onCancelDownload();
-        }
-        downloading = false;
-        super.dismiss();
-    }
-
-    public void finishDownload() {
-        downloading = false;
-        super.dismiss();
     }
 
     static CharSequence format(String text) {

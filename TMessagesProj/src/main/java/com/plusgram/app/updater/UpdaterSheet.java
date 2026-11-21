@@ -3,10 +3,7 @@ package com.plusgram.app.updater;
 import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.LocaleController.getString;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -36,10 +33,10 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
-import org.telegram.ui.Components.LineProgressView;
 import org.telegram.ui.Components.RadialProgressView;
+import org.telegram.ui.LauncherIconController.LauncherIcon;
 
-import com.plusgram.app.icons.IconShapeHelper;
+import com.plusgram.app.appicons.IconPreviewView;
 import com.plusgram.app.settings.AboutHeaderCell;
 import tw.nekomimi.nekogram.helpers.remote.UpdateHelper;
 import xyz.nextalone.nagram.NaConfig;
@@ -67,7 +64,6 @@ public class UpdaterSheet extends BottomSheet {
             R.string.OEUpdaterChannelBetaInfo,
     };
 
-    private final BaseFragment fragment;
     private final int accent;
     private final LinearLayout content;
     private final ImageView statusImage;
@@ -76,20 +72,17 @@ public class UpdaterSheet extends BottomSheet {
     private final TextView statusSubtitle;
     private final TextView notesView;
     private final ScrollView notesScroll;
-    private final LineProgressView progressView;
     private final TextView actionButton;
     private final TextView channelInfo;
     private final TextView[] channelSegments = new TextView[CHANNELS.length];
 
     private int state = -1;
     private int requestId;
-    private boolean downloading;
     private boolean dismissed;
     private GitHubUpdater.Release release;
 
     public UpdaterSheet(BaseFragment fragment) {
         super(fragment.getParentActivity(), false, fragment.getResourceProvider());
-        this.fragment = fragment;
         fixNavigationBar();
         Context context = getContext();
         accent = getThemedColor(Theme.key_featuredStickers_addButton);
@@ -171,11 +164,6 @@ public class UpdaterSheet extends BottomSheet {
         card.addView(notesScroll, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 12, 0, 0));
         content.addView(card, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 20, 0, 0));
 
-        progressView = new LineProgressView(context);
-        progressView.setProgressColor(accent);
-        progressView.setBackColor(getThemedColor(Theme.key_graySection));
-        content.addView(progressView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 4, 6, 12, 6, 0));
-
         actionButton = new TextView(context);
         actionButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         actionButton.setTypeface(AndroidUtilities.bold());
@@ -228,22 +216,8 @@ public class UpdaterSheet extends BottomSheet {
     }
 
     private View createLogo(Context context) {
-        final Path[] shape = new Path[1];
-        ImageView logo = new ImageView(context) {
-            @Override
-            public void draw(Canvas canvas) {
-                if (shape[0] == null) {
-                    shape[0] = IconShapeHelper.getFinalIconShapePath(64, 64, 16);
-                }
-                canvas.save();
-                canvas.clipPath(shape[0]);
-                super.draw(canvas);
-                canvas.restore();
-            }
-        };
-        logo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        logo.setBackgroundColor(AboutHeaderCell.LOGO_BACKGROUND);
-        logo.setImageResource(R.drawable.plusgram_icon);
+        IconPreviewView logo = new IconPreviewView(context, 0);
+        logo.setIcon(LauncherIcon.PLUSGRAM, false);
         return logo;
     }
 
@@ -290,9 +264,7 @@ public class UpdaterSheet extends BottomSheet {
         }
         animateLayout();
         updateChannel();
-        if (!downloading) {
-            check();
-        }
+        check();
     }
 
     private void updateChannel() {
@@ -410,21 +382,14 @@ public class UpdaterSheet extends BottomSheet {
     }
 
     private void updateAction() {
-        progressView.setVisibility(downloading ? View.VISIBLE : View.GONE);
         actionButton.setVisibility(View.VISIBLE);
         actionButton.setEnabled(state != STATE_CHECKING);
         actionButton.setAlpha(state == STATE_CHECKING ? 0.5f : 1f);
-        boolean filled = state == STATE_AVAILABLE && !downloading;
+        boolean filled = state == STATE_AVAILABLE;
         actionButton.setTextColor(filled ? getThemedColor(Theme.key_featuredStickers_buttonText) : accent);
         actionButton.setBackground(Theme.AdaptiveRipple.filledRect(filled ? accent : ColorUtils.setAlphaComponent(accent, 0x1F), 24));
         if (state == STATE_AVAILABLE) {
-            if (downloading) {
-                actionButton.setText(getString(R.string.Cancel));
-            } else {
-                actionButton.setText(release.apkSize > 0
-                        ? LocaleController.formatString(R.string.OEUpdateInstallSize, AndroidUtilities.formatFileSize(release.apkSize))
-                        : getString(R.string.OEUpdateInstall));
-            }
+            actionButton.setText(getString(R.string.OEUpdaterOpenRelease));
         } else if (state == STATE_FAILED) {
             actionButton.setText(getString(R.string.TryAgain));
         } else {
@@ -434,59 +399,15 @@ public class UpdaterSheet extends BottomSheet {
 
     private void onAction() {
         if (state == STATE_AVAILABLE) {
-            if (downloading) {
-                GitHubUpdater.cancelDownload();
-            } else {
-                startDownload();
-            }
+            GitHubUpdater.openReleasePage(getContext(), release);
         } else if (state == STATE_LATEST || state == STATE_FAILED) {
             check();
         }
     }
 
-    private void startDownload() {
-        Activity activity = fragment.getParentActivity();
-        if (activity == null || release == null || GitHubUpdater.isDownloading()) {
-            return;
-        }
-        downloading = true;
-        progressView.setProgress(0, false);
-        animateLayout();
-        updateAction();
-        GitHubUpdater.download(activity, release, new GitHubUpdater.DownloadListener() {
-            @Override
-            public void onProgress(long done, long total) {
-                if (dismissed || total <= 0) {
-                    return;
-                }
-                progressView.setProgress(done / (float) total, true);
-                statusSubtitle.setText(LocaleController.formatString(R.string.OEUpdateDownloadProgress,
-                        AndroidUtilities.formatFileSize(done), AndroidUtilities.formatFileSize(total)));
-            }
-
-            @Override
-            public void onFinished(boolean success, boolean canceled) {
-                downloading = false;
-                if (dismissed) {
-                    return;
-                }
-                if (success) {
-                    dismiss();
-                    return;
-                }
-                animateLayout();
-                statusSubtitle.setText(releaseDetails());
-                updateAction();
-            }
-        });
-    }
-
     @Override
     public void dismiss() {
         dismissed = true;
-        if (downloading) {
-            GitHubUpdater.cancelDownload();
-        }
         super.dismiss();
     }
 }
