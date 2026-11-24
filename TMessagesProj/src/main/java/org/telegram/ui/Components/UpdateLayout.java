@@ -14,12 +14,15 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.plusgram.app.updater.GitHubUpdater;
+
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
+import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.IUpdateLayout;
 
@@ -76,7 +79,7 @@ public class UpdateLayout extends IUpdateLayout {
                 FileLoader.getInstance(currentAccount).cancelLoadFile(SharedConfig.pendingAppUpdate.document);
                 updateAppUpdateViews(currentAccount, true);
             } else {
-                AndroidUtilities.openForView(SharedConfig.pendingAppUpdate.document, true, activity);
+                Browser.openUrlInSystemBrowser(activity, GitHubUpdater.RELEASES_URL);
             }
         });
 

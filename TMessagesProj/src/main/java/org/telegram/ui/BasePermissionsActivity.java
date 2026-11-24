@@ -36,17 +36,6 @@ public class BasePermissionsActivity extends FragmentActivity {
             REQUEST_CODE_MEDIA_GEO = 211;
 
     protected int currentAccount = -1;
-    private Runnable pendingDownloadsSave;
-
-    public void withDownloadsWritePermission(Runnable save) {
-        if (android.os.Build.VERSION.SDK_INT >= 29
-                || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            save.run();
-        } else {
-            pendingDownloadsSave = save;
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_EXTERNAL_STORAGE);
-        }
-    }
 
     protected boolean checkPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (grantResults == null) {
@@ -67,18 +56,11 @@ public class BasePermissionsActivity extends FragmentActivity {
                 showPermissionErrorAlert(R.raw.permission_request_camera, LocaleController.getString(R.string.VoipNeedCameraPermission));
             }
         } else if (requestCode == REQUEST_CODE_EXTERNAL_STORAGE || requestCode == REQUEST_CODE_EXTERNAL_STORAGE_FOR_AVATAR) {
-            Runnable downloadsSave = requestCode == REQUEST_CODE_EXTERNAL_STORAGE ? pendingDownloadsSave : null;
-            if (requestCode == REQUEST_CODE_EXTERNAL_STORAGE) {
-                pendingDownloadsSave = null;
-            }
             if (!granted) {
                 showPermissionErrorAlert(R.raw.permission_request_folder, requestCode == REQUEST_CODE_EXTERNAL_STORAGE_FOR_AVATAR ? LocaleController.getString(R.string.PermissionNoStorageAvatar) :
                         LocaleController.getString(R.string.PermissionStorageWithHint));
             } else {
                 ImageLoader.getInstance().checkMediaPaths();
-                if (downloadsSave != null) {
-                    downloadsSave.run();
-                }
             }
         } else if (requestCode == REQUEST_CODE_ATTACH_CONTACT) {
             if (!granted) {

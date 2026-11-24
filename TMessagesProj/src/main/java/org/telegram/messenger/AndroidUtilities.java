@@ -123,7 +123,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -164,7 +163,6 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
-import org.telegram.ui.BasePermissionsActivity;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.ChatBackgroundDrawable;
 import org.telegram.ui.Components.AlertsCreator;
@@ -4261,53 +4259,27 @@ public class AndroidUtilities {
                 || file.getName().toLowerCase(Locale.ROOT).endsWith(".apk");
     }
 
-    private static void showApkInstallUnavailable(Activity activity, Theme.ResourcesProvider resourcesProvider) {
-        if (activity != null) {
-            new AlertDialog.Builder(activity, resourcesProvider)
-                    .setMessage(getString(R.string.PlusgramApkInstallUnavailable))
-                    .setPositiveButton(getString(R.string.OK), null)
-                    .show();
-        }
-    }
-
-    private static void showApkSaveDialog(MessageObject message, File file, String fileName, Activity activity,
-                                          Theme.ResourcesProvider resourcesProvider) {
+    private static void openApk(File file, Activity activity, Theme.ResourcesProvider resourcesProvider) {
         if (activity == null) {
             return;
         }
-        if (!message.canForwardMessage() || message.hasRevealedExtendedMedia()
-                || MessagesController.getInstance(message.currentAccount).isPeerNoForwards(message.getDialogId())) {
-            showApkInstallUnavailable(activity, resourcesProvider);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !activity.getPackageManager().canRequestPackageInstalls()) {
+            AlertsCreator.createApkRestrictedDialog(activity, resourcesProvider).show();
             return;
         }
-
-        String documentName = FileLoader.fixFileName(fileName);
-        if (TextUtils.isEmpty(documentName)) {
-            documentName = file.getName();
+        try {
+            Uri uri = FileProvider.getUriForFile(activity, ApplicationLoader.getApplicationId() + ".provider", file);
+            Intent intent = new Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, APK_MIME_TYPE)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            activity.startActivityForResult(intent, 500);
+        } catch (Exception e) {
+            FileLog.e(e);
+            new AlertDialog.Builder(activity, resourcesProvider)
+                    .setMessage(LocaleController.formatString(R.string.NoHandleAppInstalled, APK_MIME_TYPE))
+                    .setPositiveButton(getString(R.string.OK), null)
+                    .show();
         }
-        if (!documentName.toLowerCase(Locale.ROOT).endsWith(".apk")) {
-            documentName += ".apk";
-        }
-        final String downloadName = documentName;
-        final Runnable save = () -> MediaController.saveFile(message, file.getAbsolutePath(), activity, 2,
-                downloadName, APK_MIME_TYPE, uri -> Toast.makeText(activity,
-                        getString(R.string.FileSavedHintLinked).replace("**", ""), Toast.LENGTH_SHORT).show());
-        new AlertDialog.Builder(activity, resourcesProvider)
-                .setTitle(downloadName)
-                .setMessage(getString(R.string.PlusgramApkSaveMessage))
-                .setPositiveButton(getString(R.string.SaveToDownloads), (dialog, which) -> {
-                    if (activity instanceof BasePermissionsActivity) {
-                        ((BasePermissionsActivity) activity).withDownloadsWritePermission(save);
-                    } else if (Build.VERSION.SDK_INT >= 29 || activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        save.run();
-                    } else {
-                        activity.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                BasePermissionsActivity.REQUEST_CODE_EXTERNAL_STORAGE);
-                    }
-                })
-                .setNegativeButton(getString(R.string.Cancel), null)
-                .show();
     }
 
     public static void openDocument(MessageObject message, Activity activity, BaseFragment parentFragment) {
@@ -4329,7 +4301,7 @@ public class AndroidUtilities {
         }
         if (f != null && f.exists()) {
             if (isApkAttachment(f, documentName, document.mime_type) || isApkAttachment(f, fileName, document.mime_type)) {
-                showApkSaveDialog(message, f, documentName, activity,
+                openApk(f, activity,
                         parentFragment == null ? null : parentFragment.getResourceProvider());
                 return;
             }
@@ -4414,7 +4386,7 @@ public class AndroidUtilities {
         if (f != null && f.exists()) {
             if (isApkAttachment(f, fileName, mimeType)) {
                 if (!restrict) {
-                    showApkInstallUnavailable(activity, resourcesProvider);
+                    openApk(f, activity, resourcesProvider);
                 }
                 return true;
             }
@@ -4479,7 +4451,7 @@ public class AndroidUtilities {
         if (f != null && f.exists() && (isApkAttachment(f, fileName, mimeType)
                 || isApkAttachment(f, documentName, document != null ? document.mime_type : null))) {
             if (!restrict) {
-                showApkSaveDialog(message, f, documentName, activity, resourcesProvider);
+                openApk(f, activity, resourcesProvider);
             }
             return true;
         }
