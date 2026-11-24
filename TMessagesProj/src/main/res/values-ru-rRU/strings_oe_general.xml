@@ -192,4 +192,5 @@
     <string name="PlusgramApkInstallUnavailable">Plusgram не устанавливает APK из чатов.</string>
     <string name="OELiteFollowSystemSaver">Как в системе</string>
     <string name="OELiteFollowSystemSaverInfo">Энергосбережение включается вместе с системным режимом экономии заряда.</string>
+    <string name="PlusgramApkSaveMessage">Сохраните этот APK в папку «Загрузки».</string>
 </resources>

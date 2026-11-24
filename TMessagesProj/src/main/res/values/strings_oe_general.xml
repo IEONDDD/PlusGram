@@ -195,4 +195,5 @@
     <string name="PlusgramApkInstallUnavailable">Plusgram does not install APK files from chats.</string>
     <string name="OELiteFollowSystemSaver">Follow system battery saver</string>
     <string name="OELiteFollowSystemSaverInfo">Power saving turns on together with the system battery saver.</string>
+    <string name="PlusgramApkSaveMessage">Save this APK to the Downloads folder.</string>
 </resources>

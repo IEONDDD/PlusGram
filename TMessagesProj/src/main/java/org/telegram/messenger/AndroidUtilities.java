@@ -123,6 +123,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -163,6 +164,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.BasePermissionsActivity;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.ChatBackgroundDrawable;
 import org.telegram.ui.Components.AlertsCreator;
@@ -4251,8 +4253,10 @@ public class AndroidUtilities {
         return key_hash;
     }
 
+    private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
+
     private static boolean isApkAttachment(File file, String fileName, String mimeType) {
-        return "application/vnd.android.package-archive".equalsIgnoreCase(mimeType)
+        return APK_MIME_TYPE.equalsIgnoreCase(mimeType)
                 || fileName != null && fileName.toLowerCase(Locale.ROOT).endsWith(".apk")
                 || file.getName().toLowerCase(Locale.ROOT).endsWith(".apk");
     }
@@ -4266,6 +4270,46 @@ public class AndroidUtilities {
         }
     }
 
+    private static void showApkSaveDialog(MessageObject message, File file, String fileName, Activity activity,
+                                          Theme.ResourcesProvider resourcesProvider) {
+        if (activity == null) {
+            return;
+        }
+        if (!message.canForwardMessage() || message.hasRevealedExtendedMedia()
+                || MessagesController.getInstance(message.currentAccount).isPeerNoForwards(message.getDialogId())) {
+            showApkInstallUnavailable(activity, resourcesProvider);
+            return;
+        }
+
+        String documentName = FileLoader.fixFileName(fileName);
+        if (TextUtils.isEmpty(documentName)) {
+            documentName = file.getName();
+        }
+        if (!documentName.toLowerCase(Locale.ROOT).endsWith(".apk")) {
+            documentName += ".apk";
+        }
+        final String downloadName = documentName;
+        final Runnable save = () -> MediaController.saveFile(message, file.getAbsolutePath(), activity, 2,
+                downloadName, APK_MIME_TYPE, uri -> Toast.makeText(activity,
+                        getString(R.string.FileSavedHintLinked).replace("**", ""), Toast.LENGTH_SHORT).show());
+        new AlertDialog.Builder(activity, resourcesProvider)
+                .setTitle(downloadName)
+                .setMessage(getString(R.string.PlusgramApkSaveMessage))
+                .setPositiveButton(getString(R.string.SaveToDownloads), (dialog, which) -> {
+                    if (activity instanceof BasePermissionsActivity) {
+                        ((BasePermissionsActivity) activity).withDownloadsWritePermission(save);
+                    } else if (Build.VERSION.SDK_INT >= 29 || activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        save.run();
+                    } else {
+                        activity.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                BasePermissionsActivity.REQUEST_CODE_EXTERNAL_STORAGE);
+                    }
+                })
+                .setNegativeButton(getString(R.string.Cancel), null)
+                .show();
+    }
+
     public static void openDocument(MessageObject message, Activity activity, BaseFragment parentFragment) {
         if (message == null) {
             return;
@@ -4276,15 +4320,17 @@ public class AndroidUtilities {
         }
         File f = null;
         String fileName = message.messageOwner.media != null ? FileLoader.getAttachFileName(document) : "";
+        String documentName = FileLoader.getDocumentFileName(document);
         if (message.messageOwner.attachPath != null && message.messageOwner.attachPath.length() != 0) {
             f = new File(message.messageOwner.attachPath);
         }
         if (f == null || f != null && !f.exists()) {
-            f = FileLoader.getInstance(UserConfig.selectedAccount).getPathToMessage(message.messageOwner);
+            f = FileLoader.getInstance(message.currentAccount).getPathToMessage(message.messageOwner);
         }
         if (f != null && f.exists()) {
-            if (isApkAttachment(f, fileName, document.mime_type)) {
-                showApkInstallUnavailable(activity, parentFragment == null ? null : parentFragment.getResourceProvider());
+            if (isApkAttachment(f, documentName, document.mime_type) || isApkAttachment(f, fileName, document.mime_type)) {
+                showApkSaveDialog(message, f, documentName, activity,
+                        parentFragment == null ? null : parentFragment.getResourceProvider());
                 return;
             }
             // exteraless plugins: плагин может перехватить открытие файла по расширению.
@@ -4427,7 +4473,17 @@ public class AndroidUtilities {
             f = FileLoader.getInstance(message.currentAccount).getPathToMessage(message.messageOwner);
         }
         String mimeType = message.type == MessageObject.TYPE_FILE || message.type == MessageObject.TYPE_TEXT ? message.getMimeType() : null;
-        return openForView(f, message.getFileName(), mimeType, activity, resourcesProvider, restrict);
+        String fileName = message.getFileName();
+        TLRPC.Document document = message.getDocument();
+        String documentName = FileLoader.getDocumentFileName(document);
+        if (f != null && f.exists() && (isApkAttachment(f, fileName, mimeType)
+                || isApkAttachment(f, documentName, document != null ? document.mime_type : null))) {
+            if (!restrict) {
+                showApkSaveDialog(message, f, documentName, activity, resourcesProvider);
+            }
+            return true;
+        }
+        return openForView(f, fileName, mimeType, activity, resourcesProvider, restrict);
     }
 
     public static boolean openForView(TLRPC.Document document, boolean forceCache, Activity activity) {
